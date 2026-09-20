@@ -18,6 +18,28 @@ pub struct LmSchematic {
     pub nbt: Value,
 }
 
+
+
+
+
+
+
+fn region_origin(position: BlockPos, size: BlockPos) -> BlockPos {
+    fn axis(position: i32, size: i32) -> i32 {
+        if size >= 0 {
+            position
+        } else {
+            position + size + 1
+        }
+    }
+
+    BlockPos {
+        x: axis(position.x, size.x),
+        y: axis(position.y, size.y),
+        z: axis(position.z, size.z),
+    }
+}
+
 impl LmSchematic {
     pub fn new(file_path: &str) -> Result<Self, SchematicError> {
         let file = File::open(file_path)?;
@@ -94,14 +116,25 @@ impl LmSchematic {
     pub fn read_metadata(&self) -> Result<LmMetadata, SchematicError> {
         let metadata = self.get_metadata()?;
 
-        let time_created = metadata.get_i64("TimeCreated")?;
-        let time_modified = metadata.get_i64("TimeModified")?;
-        let description = metadata.get_str("Description")?;
-        let region_count = metadata.get_i32("RegionCount")?;
-        let total_blocks = metadata.get_i32("TotalBlocks")?;
-        let author = metadata.get_str("Author")?;
-        let total_volume = metadata.get_i32("TotalVolume")?;
-        let name = metadata.get_str("Name")?;
+        
+        
+        let time_created = metadata.get_i64("TimeCreated").unwrap_or_default();
+        let time_modified = metadata.get_i64("TimeModified").unwrap_or(time_created);
+        let description = metadata
+            .get_str("Description")
+            .map(|value| value.to_string())
+            .unwrap_or_default();
+        let region_count = metadata.get_i32("RegionCount").unwrap_or_default();
+        let total_blocks = metadata.get_i32("TotalBlocks").unwrap_or_default();
+        let author = metadata
+            .get_str("Author")
+            .map(|value| value.to_string())
+            .unwrap_or_default();
+        let total_volume = metadata.get_i32("TotalVolume").unwrap_or_default();
+        let name = metadata
+            .get_str("Name")
+            .map(|value| value.to_string())
+            .unwrap_or_else(|_| "Unnamed".to_string());
         let enclosing_size = metadata.get_pos("EnclosingSize")?;
 
         Ok(LmMetadata {
@@ -134,6 +167,7 @@ impl LmSchematic {
             let position = region.get_pos("Position")?;
             let size = region.get_pos("Size")?;
             let block_state_palette = region.get_list("BlockStatePalette")?;
+            let origin = region_origin(position, size);
 
             let tile_entities_raw: Vec<Value> = region
                 .get("TileEntities")
@@ -143,11 +177,17 @@ impl LmSchematic {
                 })
                 .unwrap_or_else(|| vec![]);
 
-            let tile_entities = if tile_entities_raw.is_empty() {
+            let mut tile_entities = if tile_entities_raw.is_empty() {
                 TileEntitiesList::new()
             } else {
                 TileEntitiesList::from_nbt_lm(&tile_entities_raw, 2)?
             };
+            
+            for tile_entity in tile_entities.elements.iter_mut() {
+                tile_entity.pos.x += origin.x;
+                tile_entity.pos.y += origin.y;
+                tile_entity.pos.z += origin.z;
+            }
 
             let entities_raw: Vec<Value> = region
                 .get("Entities")
@@ -179,7 +219,7 @@ impl LmSchematic {
                 position,
                 size,
                 block_state_palette: block_state_palette.to_vec(),
-                tile_entities: tile_entities_raw.to_vec(), // 保持原始
+                tile_entities: tile_entities_raw.to_vec(), 
                 entities: entities_raw.to_vec(),
                 bits,
             });
@@ -283,6 +323,7 @@ impl LmSchematic {
                 let bits = region.bits;
                 let size = region.size;
                 let position = region.position;
+                let origin = region_origin(position, size);
 
                 let width = size.x.unsigned_abs() as usize;
                 let height = size.y.unsigned_abs() as usize;
@@ -305,9 +346,9 @@ impl LmSchematic {
                                 ) as usize;
                                 let block_data = &palette[state_id];
                                 local_blocks.add_by_pos(
-                                    x as i32 + position.x,
-                                    y as i32 + position.y,
-                                    z as i32 + position.z,
+                                    x as i32 + origin.x,
+                                    y as i32 + origin.y,
+                                    z as i32 + origin.z,
                                     block_data.clone(),
                                 );
                             }

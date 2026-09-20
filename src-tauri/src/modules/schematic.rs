@@ -779,7 +779,7 @@ pub async fn delete_schematic(
     async move {
         let mut conn = db.0.get()?;
         delete_schematic_data(&mut conn, id)?;
-        //file_manager.delete_schematic_dir(id)?; 删文件权限问题暂时不实现
+        
         add_user_schematic(&mut conn, -1)?;
         Ok(true)
     }

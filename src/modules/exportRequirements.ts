@@ -1,10 +1,10 @@
 import {RequirementStatistic} from "./requirements.ts";
 
 const escapeCsvField = (field: string): string => {
-    // 处理字符串中的双引号 (转义为 "")
+    
     let escaped = field.replace(/"/g, '""');
 
-    // 处理换行符（Excel接受\n但需要整个字段用引号括起来）
+    
     if (escaped.includes(',') || escaped.includes('\n') || escaped.includes('"') || escaped.includes('\r')) {
         escaped = `"${escaped}"`;
     }
@@ -13,11 +13,11 @@ const escapeCsvField = (field: string): string => {
 
 const exportCsv = (filename: string, headers: string[], rows: string[][]) => {
     const csvContent = [
-        headers.join(','), // 表头行
-        ...rows.map(row => row.join(',')) // 数据行
+        headers.join(','), 
+        ...rows.map(row => row.join(',')) 
     ].join('\n');
 
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' }); // \uFEFF 解决中文乱码
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' }); 
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
 

@@ -5,7 +5,7 @@ declare module "*.vue" {
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
-// src/env.d.ts
+
 declare module '../../router' {
   import { Router } from 'vue-router';
   const router: Router;

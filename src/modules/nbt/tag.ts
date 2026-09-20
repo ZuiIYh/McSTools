@@ -14,7 +14,7 @@ export enum TagType {
     LongArray = 12
 }
 
-// 基本 NBT 类型类
+
 export class Byte {
     value: number;
     constructor(value: number) {
@@ -47,7 +47,7 @@ export class Float {
     valueOf(): number { return this.value; }
 }
 
-// Tag 类型联合
+
 export type Tag =
     | number
     | string
@@ -64,18 +64,18 @@ export type Tag =
     | TagObject
     | TagMap;
 
-// Tag 数组接口
+
 export interface TagArray extends Array<Tag> {}
 
-// Tag 对象接口
+
 export interface TagObject {
     [key: string]: Tag | undefined | null;
 }
 
-// Tag Map 接口
+
 export interface TagMap extends Map<string, Tag> {}
 
-// 获取 NBT Tag 类型
+
 export function getTagType(tag: Tag): TagType {
     if (tag instanceof Byte) return TagType.Byte;
     if (tag instanceof Short) return TagType.Short;

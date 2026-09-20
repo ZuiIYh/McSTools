@@ -4,7 +4,7 @@ import {ref} from "vue";
 import {appStore} from "./store.ts";
 import {initTheme} from "./theme.ts";
 import {ThemeInstance} from "vuetify/framework";
-import { blockIconSpriteMap } from "./3DBLOCKS";
+import { blockIconSpriteMap } from "./blockResources";
 export const toast = useToast();
 export const selectLoading = ref();
 export const selectClassification = ref<string>('');
@@ -16,9 +16,9 @@ const atlasCanvasCache = new Map<string, OffscreenCanvas | HTMLCanvasElement>();
 
 export const iconCacheVersion = ref(0);
 
-/**
- * 获取或创建复用的 canvas
- */
+ 
+
+
 function getOrCreateCanvas(size: number): HTMLCanvasElement | OffscreenCanvas {
     const cacheKey = `canvas_${size}`;
     if (atlasCanvasCache.has(cacheKey)) {
@@ -37,9 +37,9 @@ function getOrCreateCanvas(size: number): HTMLCanvasElement | OffscreenCanvas {
     return canvas;
 }
 
-/**
- * 从精灵图裁剪图标并返回 Data URL
- */
+ 
+
+
 const extractIconFromAtlas = (atlasUrl: string, uv: [number, number, number, number]): string => {
     const cacheKey = `${atlasUrl}_${uv.join(',')}`;
     

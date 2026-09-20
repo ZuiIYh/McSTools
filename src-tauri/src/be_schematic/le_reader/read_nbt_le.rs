@@ -8,7 +8,7 @@ pub fn read_exact<const N: usize>(r: &mut impl Read) -> io::Result<[u8; N]> {
     Ok(buf)
 }
 
-/// Read primitives in little-endian
+
 pub fn read_u8(r: &mut impl Read) -> io::Result<u8> {
     let b = read_exact::<1>(r)?;
     Ok(b[0])
@@ -37,7 +37,7 @@ pub fn read_f64_le(r: &mut impl Read) -> io::Result<f64> {
     Ok(f64::from_le_bytes(b))
 }
 
-/// BE使用小端在前I16数组存储STR数据
+
 pub fn read_string_le(r: &mut impl Read) -> io::Result<String> {
     let ln = read_i16_le(r)?;
     if ln < 0 {
@@ -84,7 +84,7 @@ pub fn read_tag_payload(r: &mut impl Read, tag_id: Tag) -> io::Result<Value> {
         Tag::Double => Ok(Value::Double(read_f64_le(r)?)),
 
         Tag::ByteArray => {
-            let len = read_i32_le(r)?; // 长度是 i32
+            let len = read_i32_le(r)?; 
             if len < 0 {
                 return Err(io::Error::new(io::ErrorKind::InvalidData, "negative byte array length"));
             }

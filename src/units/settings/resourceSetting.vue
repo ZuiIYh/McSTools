@@ -105,7 +105,7 @@ const confirmDelete = async () => {
   isDeleting.value = true;
   try {
     await deleteResource(deleteTargetKey.value);
-    // 清除图标缓存
+    
     delete iconUrls.value[deleteTargetKey.value];
     await loadIcons();
   } finally {
@@ -308,7 +308,6 @@ onMounted(async () => {
     </v-card-text>
   </v-card>
   
-  <!-- 删除确认对话框 -->
   <v-dialog v-model="showDeleteDialog" max-width="450" persistent>
     <v-card :style="{ '--surface-alpha': opacity }">
       <v-card-title class="d-flex align-center ga-2">

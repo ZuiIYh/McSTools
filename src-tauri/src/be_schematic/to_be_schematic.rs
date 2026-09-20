@@ -114,22 +114,30 @@ impl ToBESchematic {
         ]
     }
 
-    /// 构建 `block_palette`
+    
     fn build_palette(&self) -> Value {
         let block_palette: Vec<Value> = self.unique_block_states.iter().map(|block| {
             let mut map = HashMap::new();
             map.insert("name".to_string(), Value::String(block.id.name.to_string()));
 
-            if !block.properties.is_empty() {
-                let states_map = HashMap::new();
-                //for (k, v) in &block.properties {
-                    //states_map.insert(k.to_string(), Value::String(v.to_string()));
-                //}
-                map.insert("states".to_string(), Value::Compound(states_map));
-            }else {
-                let states_map = HashMap::new();
-                map.insert("states".to_string(), Value::Compound(states_map));
+            
+            
+            let mut states_map = HashMap::new();
+            for (k, v) in &block.properties {
+                let value = v.to_string();
+                
+                let value = if value.eq_ignore_ascii_case("true") {
+                    Value::Byte(1)
+                } else if value.eq_ignore_ascii_case("false") {
+                    Value::Byte(0)
+                } else if let Ok(number) = value.parse::<i32>() {
+                    Value::Int(number)
+                } else {
+                    Value::String(value)
+                };
+                states_map.insert(k.to_string(), value);
             }
+            map.insert("states".to_string(), Value::Compound(states_map));
 
             Value::Compound(map)
         }).collect();
@@ -137,12 +145,14 @@ impl ToBESchematic {
         Value::List(block_palette)
     }
 
-    /// 构建 `block_indices` (Y → Z → X)
+    
     fn build_block_indices(&self) -> Value {
         let total_blocks = (self.length * self.width * self.height) as usize;
 
+        
+        
         let atomic_block_list: Vec<AtomicI32> =
-            (0..total_blocks).map(|_| AtomicI32::new(0)).collect();
+            (0..total_blocks).map(|_| AtomicI32::new(-1)).collect();
         let atomic_block_list = Arc::new(atomic_block_list);
 
         self.blocks.par_iter().for_each(|block| {
@@ -178,7 +188,7 @@ impl ToBESchematic {
         Value::List(block_indices)
     }
 
-    /// 转换为 Bedrock `.mcstructure` NBT 结构
+    
     pub fn to_be_value(&self) -> HashMap<String, Value> {
         let mut default_map = HashMap::new();
         default_map.insert("block_palette".to_string(), self.build_palette());

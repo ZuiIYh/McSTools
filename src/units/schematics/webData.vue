@@ -296,8 +296,8 @@ const getMcSchematicPreview = (uuid: string) => {
 const handleScroll = () => {
 
   if (!panelExpanded_MCS.value || !panelExpanded_CMS.value) {
-    panelExpanded_MCS.value = false; // 折叠
-    panelExpanded_CMS.value = false; // 折叠
+    panelExpanded_MCS.value = false; 
+    panelExpanded_CMS.value = false; 
   }
 }
 watch(

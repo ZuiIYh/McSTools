@@ -76,12 +76,12 @@ export const openData = async () => {
         const appConfigDirPath = await appConfigDir();
         await openPath(appConfigDirPath);
     } catch (error) {
-        //console.error('打开失败:', error);
+        
         toast.error(`打开失败: ${error}`, { timeout: 3000 });
     }
 };
 
-// 批量导出
+
 export const batchExportSchematics = async (blueprints: {
     id: number;
     sub_type: number;
@@ -115,7 +115,7 @@ export const batchExportSchematics = async (blueprints: {
                     targetPath
                 );
             } catch (e) {
-                //console.error(`导出失败: ${bp.name}`, e);
+                
                 toast.error(`导出失败: ${bp.name}`, { timeout: 2000 });
             }
         }

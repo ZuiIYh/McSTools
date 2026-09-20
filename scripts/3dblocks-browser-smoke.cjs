@@ -300,12 +300,10 @@ const runAttempt = async (browserPath, flagSet) => {
     try {
       fs.rmSync(profileDir, { recursive: true, force: true });
     } catch {
-      // Browser crash handlers can keep files open briefly on Windows.
     }
     try {
       fs.rmdirSync(tempRoot);
     } catch {
-      // Other temporary files may still exist.
     }
   }
 };

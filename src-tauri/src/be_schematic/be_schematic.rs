@@ -19,7 +19,7 @@ pub struct BESchematic {
 }
 
 impl BESchematic {
-    /// 从文件构造
+    
     pub fn new(file_path: &str) -> Result<Self, SchematicError> {
         let mut file = File::open(file_path)?;
         let mut buf = Vec::new();
@@ -27,7 +27,7 @@ impl BESchematic {
         Self::new_from_bytes(buf)
     }
 
-    /// 从字节数组构造
+    
     pub fn new_from_bytes(data: Vec<u8>) -> Result<Self, SchematicError> {
         let nbt = load_nbt_le(&data[..])?;
         let value = Compound(nbt);
@@ -39,7 +39,7 @@ impl BESchematic {
         }
     }
 
-    /// 获取格式版本
+    
     pub fn get_format_version(&self) -> Result<i32, SchematicError> {
         let Compound(root) = &self.nbt else {
             return Err(SchematicError::InvalidFormat("Root is not a Compound"));
@@ -47,7 +47,7 @@ impl BESchematic {
         root.get_i32("format_version")
     }
 
-    /// 获取结构尺寸
+    
     pub fn get_size(&self) -> Result<Size, SchematicError> {
         let Compound(root) = &self.nbt else {
             return Err(SchematicError::InvalidFormat("Root is not a Compound"));
@@ -69,7 +69,7 @@ impl BESchematic {
         })
     }
 
-    /// 获取结构 Compound
+    
     pub fn get_structure(&self) -> Result<&HashMap<String, Value>, SchematicError> {
         let Compound(root) = &self.nbt else {
             return Err(SchematicError::InvalidFormat("Root is not a Compound"));
@@ -81,7 +81,7 @@ impl BESchematic {
         Ok(structure)
     }
 
-    /// 解析 Palette
+    
     pub fn parse_block_palette(
         &self,
         structure: &HashMap<String, Value>,
@@ -112,7 +112,7 @@ impl BESchematic {
         Ok(palette)
     }
 
-    /// 解析单个 Palette entry
+    
     fn parse_palette_entry(value: &Value) -> Result<BlockData, SchematicError> {
         let Compound(root) = value else {
             return Err(SchematicError::InvalidFormat("block_palette entry must be Compound"));
@@ -132,7 +132,7 @@ impl BESchematic {
         })
     }
 
-    /// 解析 Block states
+    
     fn parse_block_states(states_value: Option<&Value>) -> BTreeMap<Arc<str>, Arc<str>> {
         let mut properties = BTreeMap::new();
 
@@ -150,7 +150,7 @@ impl BESchematic {
         properties
     }
 
-    /// 解析 block_indices，生成 SchematicData
+    
     pub fn get_blocks_pos(&self) -> Result<SchematicData, SchematicError> {
         let structure = self.get_structure()?;
 
@@ -164,17 +164,17 @@ impl BESchematic {
 
         let mut block_list = BlockStatePosList::default();
 
-        // 主层
+        
         if let Some(Value::List(layer0)) = block_indices.get(0) {
             self.parse_block_layer(layer0, &palette, &size, &mut block_list)?;
         }
 
-        // 副层（水、液体）
-        /*
-        if let Some(Value::List(layer1)) = block_indices.get(1) {
-            self.parse_block_layer(layer1, &palette, &size, &mut block_list)?;
-        }
-         */
+        
+         
+
+
+
+
 
         let tile_entities = TileEntitiesList::default();
         Ok(SchematicData::new(block_list, tile_entities, EntitiesList::default(), size))
@@ -200,7 +200,7 @@ impl BESchematic {
         Ok(())
     }
 
-    /// 一维索引 -> 三维坐标
+    
     fn index_to_pos(index: i32, size: &Size) -> BlockPos {
         let z = index % size.length;
         let y = (index / size.length) % size.height;

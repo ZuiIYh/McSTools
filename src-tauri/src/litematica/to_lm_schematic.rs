@@ -156,7 +156,7 @@ impl ToLmSchematic {
         let blocks = block_list.elements;
         let tile_entities = schematic.tile_entities_list.clone();
         let entities = schematic.entities_list.clone();
-        //println!("{:?}", blocks);
+        
         Ok(Self {
             blocks,
             start_pos: min,
@@ -357,7 +357,7 @@ impl ToLmSchematic {
 
         region.insert("BlockStatePalette".to_string(), self.lm_palette());
         region.insert("TileEntities".to_string(), Value::List(self.build_tile_entities_list()));
-        //region.insert("TileEntities".to_string(), Value::List(vec![]));
+        
         region.insert("Entities".to_string(), Value::List(self.build_entities_list()));
         regions.insert("null".to_string(), Compound(region));
         Compound(regions)

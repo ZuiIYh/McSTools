@@ -191,7 +191,7 @@ impl ToCreateSchematic {
         tag.insert("blocks".to_string(), self.create_blocks(air));
         tag.insert("palette".to_string(), self.create_palette());
         tag.insert("entities".to_string(), Value::List(self.build_entities_list()));
-        tag.insert("DataVersion".to_string(), Value::Int(3465)); // 你说的对别问我这里为什么写固定值
+        tag.insert("DataVersion".to_string(), Value::Int(3465)); 
 
         Compound(tag)
     }

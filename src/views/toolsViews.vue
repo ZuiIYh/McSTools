@@ -11,7 +11,7 @@ import toolsData from '../units/tools/toolsData.vue';
 import toolsSchematic from '../units/tools/toolsSchematic.vue';
 import toolsHistory from '../units/tools/toolsHistory.vue'
 import toolsSplit from '../units/tools/toolsSplit.vue';
-import ToolsThreeD from "../units/tools/toolsThreeD.vue";
+import toolsEditor from "../units/tools/toolsEditor.vue";
 import { useI18n } from 'vue-i18n';
 
 import {
@@ -108,7 +108,7 @@ onMounted(async() => {
             <toolsStats :data="schematicRequirements"/>
           </v-window-item>
           <v-window-item value="threeD">
-            <tools-three-d />
+            <toolsEditor />
           </v-window-item>
         </v-window>
       </v-card>

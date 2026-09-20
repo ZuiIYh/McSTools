@@ -37,9 +37,9 @@ interface ResourceData {
     iconUvMap?: Record<string, [number, number, number, number]>;
 }
 
-/**
- * 加载单个模组的资源
- */
+ 
+
+
 async function loadModResource(modName: string): Promise<ResourceData | null> {
     try {
         const modPath = await resolveResource(`data/resource/${modName}`);

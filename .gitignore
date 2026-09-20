@@ -23,6 +23,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Exclude local/generated workspace items
+.vs/
+src-tauri/data/editor/
+src-tauri/tests/
+src/modules/3DBLOCKS/
+src/modules/threeD_data.ts
+src/units/tools/toolsThreeD.vue
+tests/
+vitest.config.ts
+"启动测试版.bat"
+
 src-tauri/data/resource/ars_nouveau/config.json
 src-tauri/data/resource/ars_nouveau/assets/atlas/atlas.png
 src-tauri/data/resource/ars_nouveau/assets/atlas/data.min.json

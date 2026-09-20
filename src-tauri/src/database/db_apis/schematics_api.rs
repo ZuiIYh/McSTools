@@ -163,30 +163,52 @@ pub fn find_schematic(
     let schematic = tx.query_row(
         "SELECT * FROM schematics WHERE id = ? AND is_deleted = FALSE",
         [id],
-        |row| {
-            Ok(Schematic {
-                id: row.get("id")?,
-                name: row.get("name")?,
-                description: row.get("description")?,
-                schematic_type: row.get("type")?,
-                sub_type: row.get("sub_type")?,
-                is_deleted: row.get("is_deleted")?,
-                sizes: row.get("sizes")?,
-                user: row.get("user")?,
-                is_upload: row.get("is_upload")?,
-                version: row.get("version")?,
-                version_list: row.get("version_list")?,
-                created_at: row.get("created_at")?,
-                updated_at: row.get("updated_at")?,
-                schematic_tags: row.get("schematic_tags")?,
-                game_version: row.get("game_version")?,
-                lm_version: row.get("lm_version")?,
-                classification: row.get("classification")?,
-            })
-        },
+        read_schematic,
     );
     tx.commit()?;
     Ok(schematic?)
+}
+
+
+fn read_schematic(row: &rusqlite::Row<'_>) -> rusqlite::Result<Schematic> {
+    Ok(Schematic {
+        id: row.get("id")?,
+        name: row.get("name")?,
+        description: row.get("description")?,
+        schematic_type: row.get("type")?,
+        sub_type: row.get("sub_type")?,
+        is_deleted: row.get("is_deleted")?,
+        sizes: row.get("sizes")?,
+        user: row.get("user")?,
+        is_upload: row.get("is_upload")?,
+        version: row.get("version")?,
+        version_list: row.get("version_list")?,
+        created_at: row.get("created_at")?,
+        updated_at: row.get("updated_at")?,
+        schematic_tags: row.get("schematic_tags")?,
+        game_version: row.get("game_version")?,
+        lm_version: row.get("lm_version")?,
+        classification: row.get("classification")?,
+    })
+}
+
+pub fn list_previewable_schematics(
+    conn: &mut PooledConnection<SqliteConnectionManager>,
+) -> Result<Vec<Schematic>> {
+    let mut stmt = conn.prepare(
+        r#"
+        SELECT * FROM schematics
+        WHERE is_deleted = FALSE
+          AND type IN (2, 3)
+        ORDER BY updated_at DESC
+        "#,
+    )?;
+
+    let schematics = stmt
+        .query_map([], read_schematic)?
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok(schematics)
 }
 
 pub fn get_schematic_version(
@@ -271,27 +293,7 @@ pub fn get_schematics(
     let schematics = stmt
         .query_map(
             rusqlite::params![search_pattern, classification_pattern, page_size, offset],
-            |row| {
-                Ok(Schematic {
-                    id: row.get("id")?,
-                    name: row.get("name")?,
-                    description: row.get("description")?,
-                    schematic_type: row.get("type")?,
-                    sub_type: row.get("sub_type")?,
-                    is_deleted: row.get("is_deleted")?,
-                    sizes: row.get("sizes")?,
-                    user: row.get("user")?,
-                    is_upload: row.get("is_upload")?,
-                    version: row.get("version")?,
-                    version_list: row.get("version_list")?,
-                    created_at: row.get("created_at")?,
-                    updated_at: row.get("updated_at")?,
-                    schematic_tags: row.get("schematic_tags")?,
-                    game_version: row.get("game_version")?,
-                    lm_version: row.get("lm_version")?,
-                    classification: row.get("classification")?,
-                })
-            },
+            read_schematic,
         )
         .map_err(|e| e.to_string())?
         .collect::<Result<Vec<_>, _>>()
@@ -321,7 +323,7 @@ pub fn count_schematics(
 ) -> Result<i64, String> {
     let conn = db.0.get().map_err(|e| e.to_string())?;
 
-    // 如果传空字符串，就表示不过滤 classification
+    
     let filter_pattern = if classification_filter.is_empty() {
         "".to_string()
     } else {

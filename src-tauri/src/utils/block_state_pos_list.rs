@@ -100,3 +100,48 @@ impl BlockStatePosList {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn block(name: &str) -> Arc<BlockData> {
+        Arc::new(BlockData {
+            id: BlockId {
+                name: Arc::from(name),
+            },
+            properties: BTreeMap::new(),
+        })
+    }
+
+    #[test]
+    fn maintains_order_when_prepending_and_merging() {
+        let stone = block("minecraft:stone");
+        let glass = block("minecraft:glass");
+        let mut list = BlockStatePosList::default();
+        list.add_by_pos(1, 2, 3, stone.clone());
+        list.add_to_first(0, 0, 0, &glass);
+
+        let mut other = BlockStatePosList::default();
+        other.add_by_pos(4, 5, 6, stone);
+        list.merge(other);
+
+        assert_eq!(list.elements.len(), 3);
+        assert_eq!(list.elements[0].pos.to_string(), "0,0,0");
+        assert_eq!(list.elements[2].pos.to_string(), "4,5,6");
+    }
+
+    #[test]
+    fn removes_by_value_and_index() {
+        let stone = block("minecraft:stone");
+        let target = BlockStatePos::new(BlockPos { x: 1, y: 0, z: 0 }, stone.clone());
+        let mut list = BlockStatePosList::default();
+        list.add_by_pos(0, 0, 0, stone.clone());
+        list.add_by_pos(1, 0, 0, stone);
+
+        assert!(list.remove(&target));
+        assert!(!list.remove(&target));
+        assert!(list.remove_by_index(0).is_some());
+        assert!(list.remove_by_index(0).is_none());
+    }
+}

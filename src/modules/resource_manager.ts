@@ -7,9 +7,9 @@ import { toast } from './others.ts';
 const GITHUB_RAW_BASE = 'https://ghcr.mcschematic.top/https://raw.githubusercontent.com/guapi-exe/mcstools_resources/master';
 const RESOURCES_JSON_URL = `${GITHUB_RAW_BASE}/resources.json`;
 
-/**
- * 远程资源配置接口
- */
+ 
+
+
 export interface RemoteResourceConfig {
     namespace: string;
     name?: string;
@@ -22,9 +22,9 @@ export interface RemoteResourceConfig {
     itemCount: number;
 }
 
-/**
- * 本地资源配置接口 (与 config.json 结构一致)
- */
+ 
+
+
 export interface LocalResourceConfig {
     namespace: string;
     name?: string;
@@ -40,7 +40,7 @@ export interface LocalResourceConfig {
 export type ResourceStatus = 'installed' | 'not-installed' | 'update-available' | 'downloading';
 
 export interface ResourceItem {
-    key: string;  // 资源的 key (如 "minecraft", "create")
+    key: string;  
     remote?: RemoteResourceConfig;
     local?: LocalResourceConfig;
     status: ResourceStatus;
@@ -198,7 +198,7 @@ export async function downloadResource(resourceKey: string): Promise<boolean> {
     
     downloadingResources.value.add(resourceKey);
     
-    // 更新状态为下载中
+    
     const updateProgress = (progress: number) => {
         const item = resourceList.value.find(r => r.key === resourceKey);
         if (item) {

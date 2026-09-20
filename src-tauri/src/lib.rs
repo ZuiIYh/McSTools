@@ -1,11 +1,12 @@
 mod CMS;
-mod be_schematic;
+pub mod be_schematic;
 mod building_gadges;
 pub mod create;
 mod data_files;
 mod database;
 pub mod litematica;
 mod map_art;
+mod editor;
 pub mod modules;
 pub mod utils;
 mod word_edit;
@@ -60,6 +61,7 @@ pub fn run() {
             app.manage(je_blocks);
             let map_arts = MapArtsData::new(app.handle())?;
             app.manage(map_arts);
+            app.manage(editor::EditorState::new());
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
@@ -101,7 +103,11 @@ pub fn run() {
             get_schematic_str,
             get_schematic_data,
             get_schematic_preview_data,
-            get_schematic_convert_data
+            get_schematic_convert_data,
+            editor::editor_url,
+            editor::editor_url_for_schematic,
+            editor::open_editor,
+            editor::open_editor_for_schematic
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -21,32 +21,54 @@ export const handleUpload = async (update_id: number) => {
     uploadStatus.value = 'uploading';
     uploadError.value = null;
 
+    
+    
+    const failures: string[] = [];
+    let succeeded = 0;
+
     try {
         toast.info(`蓝图正在${update_id == -1? '上传': '更新'}解析请勿关闭`, {
             timeout: 2000
         });
         for (const file of files.value) {
-            const arrayBuffer = await file.arrayBuffer();
-            const uint8Array = new Uint8Array(arrayBuffer);
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const uint8Array = new Uint8Array(arrayBuffer);
 
-            await invoke('encode_uploaded_schematic', {
-                fileName: file.name,
-                data: Array.from(uint8Array),
-                update: update_id != -1,
-                updateId: update_id
-            });
+                await invoke('encode_uploaded_schematic', {
+                    fileName: file.name,
+                    data: Array.from(uint8Array),
+                    update: update_id != -1,
+                    updateId: update_id
+                });
+                succeeded += 1;
+            } catch (err) {
+                failures.push(`${file.name}: ${err}`);
+                console.error(`蓝图解析失败:${file.name}`, err);
+            }
         }
         if (update_id != -1) {
             await fetch_data(update_id)
         }
 
-        uploadStatus.value = 'success';
-        userData.value.schematics += files.value.length;
-        markLocalSchematicsDirty()
-        startProgressTimer()
-        toast.success(`蓝图${update_id == -1? '上传': '更新'}完毕`, {
-            timeout: 2000
-        });
+        if (failures.length > 0) {
+            uploadStatus.value = 'error';
+            uploadError.value = failures.join('\n');
+            toast.error(`有 ${failures.length} 个文件导入失败：\n${failures.join('\n')}`, {
+                timeout: 6000
+            });
+        } else {
+            uploadStatus.value = 'success';
+            toast.success(`蓝图${update_id == -1? '上传': '更新'}完毕`, {
+                timeout: 2000
+            });
+        }
+
+        if (succeeded > 0) {
+            userData.value.schematics += succeeded;
+            markLocalSchematicsDirty()
+            startProgressTimer()
+        }
     } catch (err) {
         uploadStatus.value = 'error';
         uploadError.value = err instanceof Error ? err.message : '文件上传失败';

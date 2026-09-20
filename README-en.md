@@ -8,6 +8,18 @@
 [![License](https://img.shields.io/badge/License-AGPLv3-green)]()
 
 > A cross-platform toolkit built with Rust, delivering exceptional memory safety and native-level performance
+>
+> Current version: v1.4.0
+
+---
+
+##  Version 1.4.0
+- **Structure Preview Tool Refactor**  
+  Focused on refactoring and optimizing the structure preview feature to improve generation efficiency, display quality, and interaction stability.
+- **Scope-Focused Update**  
+  This release is centered on the structure preview workflow and does not represent a broad feature overhaul across unrelated modules.
+- **Stability and Compatibility Improvements**  
+  Adjusted preview behavior for common edge cases to reduce display anomalies and improve compatibility under different data conditions.
 
 ---
 
@@ -60,12 +72,12 @@
 ---
 
 ##  Latest Updates
-- **Map Art Generator Improvements**  
-  Performance issues have been optimized; heavy computation tasks were moved to the backend; multiple color diffusion and color-matching algorithms were added.
-- **Model-to-Blueprint Feature Completed**  
-  Now supports `OBJ`, `GLTF`, `GLB`, and `STL` model import, and uses the same block color library as the Map Art module.
-- **3D Rendering & Stability Optimization (Planned for Next Release)**  
-  The optimization plan is ready: reduce 3D model rendering pressure, improve memory usage, and lower crash risk. This is not yet implemented in the current release and will be shipped in the next update.
+- **v1.4.0 Release**  
+  This release focuses on restructuring and optimizing the structure preview tool with improvements to efficiency, interaction, and stability.
+- **Structure Preview Tool Refactor**  
+  The structure preview workflow was refactored to improve the display process and performance stability during preview generation.
+- **Compatibility and Stability Adjustments**  
+  Fixed common preview exceptions and improved compatibility across varied data inputs and runtime conditions.
 
 ---
 

@@ -99,7 +99,7 @@ pub fn write_tag_payload(w: &mut impl Write, val: &Value) -> io::Result<()> {
             for (k, v) in map {
                 write_tag(w, k, v)?;
             }
-            // Compound 结尾 TAG_End
+            
             write_u8(w, 0)
         }
         Value::IntArray(arr) => {
@@ -119,13 +119,13 @@ pub fn write_tag_payload(w: &mut impl Write, val: &Value) -> io::Result<()> {
     }
 }
 
-/// 写入根 Compound
+
 pub fn save_nbt_le(mut w: impl Write, name: &str, root: &HashMap<String, Value>) -> io::Result<()> {
     write_u8(&mut w, Tag::Compound as u8)?;
     write_string_le(&mut w, name)?;
     for (k, v) in root {
         write_tag(&mut w, k, v)?;
     }
-    write_u8(&mut w, 0)?; // TAG_End
+    write_u8(&mut w, 0)?; 
     Ok(())
 }

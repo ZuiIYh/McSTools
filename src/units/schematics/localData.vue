@@ -24,6 +24,7 @@ import {update_schematic_name, update_user_classification} from "../../modules/u
 import {opacity} from "../../modules/theme.ts";
 import {useI18n} from "vue-i18n";
 import {localSchematicsRefreshVersion} from "../../modules/upload_schematic.ts";
+import {mergeById} from "../../modules/schematic_list.ts";
 
 const PAGE_SIZE = 20
 const BULK_PAGE_SIZE = 100
@@ -39,7 +40,7 @@ const draggingOverId = ref<number | null>(null)
 const selectedBpName = ref('')
 const hasMore = ref(true);
 const isDraggingTag = ref(false)
-const rail_e = ref(true) // rail 折叠状态
+const rail_e = ref(true) 
 const panelExpanded = ref(false)
 const isLoading = ref(false);
 const open = ref(false);
@@ -118,7 +119,7 @@ const reload = async () => {
       page: autoPage.value,
       page_size: PAGE_SIZE
     });
-    schematics.value = [...schematics.value, ...data];
+    schematics.value = mergeById(schematics.value, data);
     autoPage.value += 1;
 
     hasMore.value = data.length === PAGE_SIZE;
@@ -178,7 +179,10 @@ const schematic_load = async ({ done }: LoadParams) => {
     done('empty')
     return
   }
-  if (!hasMore.value || isLoading.value) return;
+  if (isLoading.value) {
+    done('ok')
+    return
+  }
 
   try {
     isLoading.value = true;
@@ -188,7 +192,7 @@ const schematic_load = async ({ done }: LoadParams) => {
       page: autoPage.value,
       page_size: PAGE_SIZE
     });
-    schematics.value = [...schematics.value, ...data];
+    schematics.value = mergeById(schematics.value, data);
     autoPage.value += 1;
     hasMore.value = data.length === PAGE_SIZE;
     done('ok')
@@ -221,7 +225,7 @@ const schematicTags = (str: string) => {
 const handleScroll = () => {
 
   if (!panelExpanded.value) {
-    panelExpanded.value = false; // 折叠
+    panelExpanded.value = false; 
   }
 }
 
@@ -364,20 +368,36 @@ const fetchAllMatchingSchematics = async () => {
   return allSchematics
 }
 
-onMounted(async () => {
+
+
+const loadedOnce = ref(false)
+
+const loadSchematics = async () => {
   await syncClassificationState();
   await reload()
   lastHandledRefreshVersion.value = localSchematicsRefreshVersion.value
+}
+
+onMounted(async () => {
+  if (loadedOnce.value) {
+    return
+  }
+  loadedOnce.value = true
+  await loadSchematics()
 });
 
 onActivated(async () => {
+  if (!loadedOnce.value) {
+    loadedOnce.value = true
+    await loadSchematics()
+    return
+  }
+
   if (lastHandledRefreshVersion.value === localSchematicsRefreshVersion.value) {
     return
   }
 
-  await syncClassificationState()
-  await reload()
-  lastHandledRefreshVersion.value = localSchematicsRefreshVersion.value
+  await loadSchematics()
 })
 
 const selectAll = async () => {
@@ -721,7 +741,7 @@ const confirmBatchDelete = async () => {
                       <span class="text-caption">{{ formatTime(bp.updated_at) }}</span>
                     </div>
 
-                    <!-- 标签展示 -->
+                     
                     <div class="d-flex align-center flex-wrap mt-1" v-if="schematicTags(bp.schematic_tags).length > 0">
                       <v-chip
                           v-for="(tag, idx) in schematicTags(bp.schematic_tags).slice(0, 8)"
@@ -735,7 +755,7 @@ const confirmBatchDelete = async () => {
                         {{ tag }}
                       </v-chip>
 
-                      <!-- 超出提示 -->
+                       
                       <v-chip
                           v-if="schematicTags(bp.schematic_tags).length > 8"
                           color="info"
@@ -1040,14 +1060,14 @@ const confirmBatchDelete = async () => {
   border-radius: 0 2px 2px 0;
 }
 .blueprint-item.drag-over {
-  border: 2px dashed #1976d2;   /* 蓝色高亮边框 */
+  border: 2px dashed #1976d2;    
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(25, 118, 210, 0.6); /* 蓝色发光效果 */
+  box-shadow: 0 0 10px rgba(25, 118, 210, 0.6);  
   transition: 0.2s;
 }
 
 .blueprint-item.selected-item {
-  background-color: rgba(25, 118, 210, 0.08); /* 选中高亮 */
+  background-color: rgba(25, 118, 210, 0.08);  
   border-left: 4px solid #1976d2;
 }
 .cursor-grab {

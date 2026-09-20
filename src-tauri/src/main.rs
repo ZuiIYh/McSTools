@@ -1,4 +1,4 @@
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
+
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::fs::File;
@@ -34,11 +34,11 @@ fn test_be_schematic() -> Result<(), SchematicError> {
     let schematic2 =
         BESchematic::new("./schematic/test.mcstructure")?;
     let schem2 = schematic2.get_blocks_pos()?;
-    //print!("{:?}", schem2);
+    
     let to = ToBESchematic::new(&schem2)?;
     println!("{:?},{:?}", to.start_pos, to.end_pos);
     let requirements = get_requirements(&schem2.blocks)?;
-    //print!("{:?}", requirements);
+    
 
     let duration = start_time.elapsed();
     let peak_mem_kb = peak_watcher.load(Ordering::Relaxed) / 1024;
@@ -57,7 +57,7 @@ fn test_lm_schematic() -> Result<(), SchematicError> {
     let to = ToLmSchematic::new(&schem2)?;
     println!("{:?},{:?}", to.start_pos, to.end_pos);
     let requirements = get_requirements(&schem2.blocks)?;
-    //print!("{:?}", requirements);
+    
 
     let duration = start_time.elapsed();
     let peak_mem_kb = peak_watcher.load(Ordering::Relaxed) / 1024;
@@ -72,7 +72,7 @@ fn test_create_schematic() -> Result<(), SchematicError> {
 
     let sichematic = CreateSchematic::new("./schematic/test.nbt")?;
     let schem = sichematic.get_blocks_pos()?;
-    //print!("{:?}", schem);
+    
 
     let duration = start_time.elapsed();
     let peak_mem_kb = peak_watcher.load(Ordering::Relaxed) / 1024;
@@ -89,13 +89,13 @@ fn bg_schematic_write() -> Result<(), SchematicError> {
         BgSchematic::new("./schematic/384046fd-ac85-4d97-bfca-0d2d41482cab_type1.json")?;
     let schem3 = schematic3.get_blocks_pos()?;
 
-    //let bg = ToBgSchematic::new(&schem3);
-    //let data = bg.bg_schematic()?;
-    //let output_path = "./schematic/out.json";
-    //let file = File::create(output_path)?;
-    //let writer = BufWriter::new(file);
+    
+    
+    
+    
+    
 
-    //serde_json::to_writer_pretty(writer, &data)?;
+    
 
     let duration = start_time.elapsed();
     let peak_mem_kb = peak_watcher.load(Ordering::Relaxed) / 1024;
@@ -114,8 +114,9 @@ fn lm_schematic_write() -> Result<(), SchematicError> {
 
     let bg = ToLmSchematic::new(&schem3)?;
     let data = bg.lm_schematic(6);
-    let output_path = "./schematic/out2.litematic";
-    to_writer_gzip(&data, output_path)?;
+    
+    let output_path = std::env::temp_dir().join("mcstools-lm-schematic-write.litematic");
+    to_writer_gzip(&data, output_path.to_str().unwrap())?;
 
     let duration = start_time.elapsed();
     let peak_mem_kb = peak_watcher.load(Ordering::Relaxed) / 1024;
@@ -133,11 +134,11 @@ fn lm_big_schematic_write() -> Result<(), SchematicError> {
     let schem3 = schematic3.get_blocks_pos()?;
 
     println!("加载方块: {}", schem3.blocks.elements.len());
-    //let bg = ToCreateSchematic::new(&schem3)?;
-    //let bg = ToCreateSchematic::new(&schem3)?;
-    //let data = bg.create_schematic(false);
-    //let output_path = "./schematic/out.nbt";
-    //to_writer_gzip(&data, output_path)?;
+    
+    
+    
+    
+    
 
     let duration = start_time.elapsed();
     let peak_mem_kb = peak_watcher.load(Ordering::Relaxed) / 1024;
@@ -151,17 +152,19 @@ fn be_schematic_write() -> Result<(), SchematicError> {
     let peak_watcher = start_memory_peak_watcher();
     let start_time = Instant::now();
 
+    
     let schematic2 =
-        BESchematic::new("./schematic/out6.mcstructure")?;
+        BESchematic::new("./schematic/test.mcstructure")?;
     let schem2 = schematic2.get_blocks_pos()?;
-    //print!("{:?}", schem2);
+    
     let to = ToBESchematic::new(&schem2)?;
     println!("{:?},{:?},{:?}", to.height, to.length, to.width);
-    //let requirements = get_requirements(&schem2.blocks)?;
-    //print!("{:?}", requirements);
+    
+    
     let root = to.to_be_value();
-    let output_path = "./schematic/out8.mcstructure";
-    let file = File::create(output_path)?;
+    
+    let output_path = std::env::temp_dir().join("mcstools-be-schematic-write.mcstructure");
+    let file = File::create(&output_path)?;
     save_nbt_le(file, "Schematic", &root)?;
 
     let duration = start_time.elapsed();
@@ -186,7 +189,7 @@ fn start_memory_peak_watcher() -> Arc<AtomicU64> {
                 let mem = proc.memory();
                 peak_clone.fetch_max(mem, Ordering::Relaxed);
             }
-            thread::sleep(Duration::from_millis(50)); // 采样间隔
+            thread::sleep(Duration::from_millis(50)); 
         }
     });
 

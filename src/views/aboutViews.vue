@@ -264,6 +264,17 @@ onBeforeRouteLeave(navigationGuard)
                             <span>{{ t('about.developers.author') }}</span>
                           </v-tooltip>
                         </v-col>
+                          <v-col cols="auto">
+                            <div class="d-flex align-start">
+                              <v-avatar size="28" class="mr-2">
+                                <v-img
+                                  src="https://github.com/ZuiIYh.png?size=56"
+                                  alt="ZuiIYh"
+                                ></v-img>
+                              </v-avatar>
+                              <span class="text-h6 font-weight-medium">ZuiIYh</span>
+                            </div>
+                          </v-col>
                       </v-row>
                     </div>
                   </div>

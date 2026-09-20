@@ -126,7 +126,7 @@ const hasProperties = (block: BlockData): boolean => {
   return Object.keys(block.properties).length > 0
 }
 
-// 精准模式：只检索方块ID
+
 const filterBlocksById = (_value: string, query: string, item?: any) => {
   if (!query) return true
   const search = query.toLowerCase()
@@ -135,7 +135,7 @@ const filterBlocksById = (_value: string, query: string, item?: any) => {
   return block.id.toLowerCase().includes(search)
 }
 
-// 简单模式：同时检索中文名和ID
+
 const filterBlocksByNameAndId = (_value: string, query: string, item?: any) => {
   if (!query) return true
   const search = query.toLowerCase()

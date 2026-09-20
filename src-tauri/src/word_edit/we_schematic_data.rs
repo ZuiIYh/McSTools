@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct WeMetadata {
-    //we蓝图 metadata参数较为自由暂时弃用
+    
     pub(crate) we_offset_x: i64,
     pub(crate) we_offset_y: i64,
     pub(crate) we_offset_z: String,

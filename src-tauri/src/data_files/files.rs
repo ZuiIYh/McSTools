@@ -681,7 +681,7 @@ fn open_file_lock(path: &Path) -> Result<fs::File> {
 
     let file = fs::OpenOptions::new()
         .write(true)
-        .share_mode(0) // 独占模式
+        .share_mode(0) 
         .open(path)
         .context("Unable to lock file")?;
 
