@@ -324,7 +324,9 @@ onBeforeRouteLeave(navigationGuard)
             <div v-else class="text-body-2 text-medium-emphasis">{{ t('modloader.noInstalled') }}</div>
 
             <v-alert type="warning" variant="text" class="mt-6" density="compact">
-              {{ t('modloader.note') }}
+              <!-- 兼容性 / 性能提示：置于提示区首行以突出显示 -->
+              <div class="font-weight-bold">{{ t('modloader.compatNote') }}</div>
+              <div>{{ t('modloader.note') }}</div>
             </v-alert>
           </v-card-text>
         </v-card>

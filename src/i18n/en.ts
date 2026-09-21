@@ -746,6 +746,7 @@ export default {
     invisible: '{n} invisible',
     risk: '{n} magenta risk',
     noInstalled: 'No mods installed yet. Pick a mod file to get started.',
+    compatNote: 'Mod compatibility is still being optimized; initial performance is low.',
     note: 'Uninstall removes blocks and cache completely; disable only hides them and can be re-enabled anytime. Enabled mods auto-reload after the editor mirror is replaced.'
   }
 }
