@@ -424,6 +424,8 @@ export { modelKeyFor };   // 实现统一在 mod-shared.mjs（加载器解析跨
  *   slope=horizontal              →  {dir}/{part}          （平带）
  *   slope=upward/downward         →  {dir}/diagonal_{part}  （45° 斜段，坐标自带斜度）
  *   slope=vertical/sideways       →  {dir}/{part} 并置 x=90（把平带立起来）
+ *   part=pulley（任何 slope）      →  belt_pulley 并置 x=90（源模型是竖轴建模，Axis y 0..16，
+ *                                     必须放平成横轴滚筒；朝向取同 facing 的 vertical 基准）
  * 后者的依据：包里**没有**竖直带面模型（belt/ 下只有 diagonal_* 与 *_bottom），而 casing 分支里
  * vertical 与 sideways 共用 `belt_casing/sideways_*`（一个竖板）；把平带模型立起来才是同形近似，
  * 直接套 diagonal_* 会得到 45° 斜段 —— 这正是「垂直/侧向传送带形状朝向全错」的原因。
@@ -488,14 +490,24 @@ function remapFlywheelStatic(bs, models) {
       let ok = false;
       for (const c of cand) if (models.has(c)) { e.model = c; n++; ok = true; break; }
       if (!ok) continue;
-      const ref = orient.get(normKey(props));
-      if (ref) {
-        if (upright) {
-          e.x = 90;              // 把平带立起来
-          e.y = ref.y;           // 朝向取 casing 基准（源占位值 vertical 差 90°）
-        } else {
-          e.x = ref.x;
-          e.y = ref.y;
+      if (part === 'pulley') {
+        // belt_pulley 是「竖轴建模」（Axis 元素 y 0..16，滚筒轴线沿 y），与 belt_casing/sideways_pulley
+        // 同类；任何 slope 都要 x=90 放平成「横轴滚筒」。绝不能套 horizontal 的水平建模基准
+        // （horizontal_pulley 是 y 0..11 躺着的、x=0），否则会渲染成「竖轴木柱」。
+        // 朝向取同 facing 的 vertical 基准（sideways_pulley 的放平朝向）。
+        const vref = orient.get(normKey({ ...props, slope: 'vertical' }));
+        e.x = 90;
+        e.y = (vref && vref.y) ?? 0;
+      } else {
+        const ref = orient.get(normKey(props));
+        if (ref) {
+          if (upright) {
+            e.x = 90;              // 把平带立起来
+            e.y = ref.y;           // 朝向取 casing 基准（源占位值 vertical 差 90°）
+          } else {
+            e.x = ref.x;
+            e.y = ref.y;
+          }
         }
       }
     }
