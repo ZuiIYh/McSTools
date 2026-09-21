@@ -722,5 +722,25 @@ export default {
       tooltip: 'All developers and representatives must comply with AGPL V3 protocol, modifications and distributions must credit all developers and the license',
       author: 'Author'
     }
+  },
+  modloader: {
+    title: 'Mod Loader',
+    installHeading: 'Install a new mod',
+    selectFile: 'Select mod file (.jar / .zip)',
+    parsing: 'Parsing mod…',
+    modid: 'Mod ID',
+    blocksFound: 'Blocks found',
+    missing: 'Blocks missing texture',
+    namespaces: 'Namespaces',
+    missingList: 'These blocks have no usable texture',
+    more: '{n} more',
+    install: 'Install into editor',
+    installedHeading: 'Installed mods',
+    disabled: 'Disabled',
+    blockCount: '{n} blocks',
+    imageCount: '{n} textures',
+    uninstall: 'Uninstall',
+    noInstalled: 'No mods installed yet. Pick a mod file to get started.',
+    note: 'Uninstall removes blocks and cache completely; disable only hides them and can be re-enabled anytime. Enabled mods auto-reload after the editor mirror is replaced.'
   }
-} 
+}

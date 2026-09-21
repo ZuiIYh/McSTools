@@ -9,6 +9,7 @@ const AboutViews = () => import('../src/views/aboutViews.vue')
 const EmptyViews = () => import('../src/views/EmptyViews.vue')
 const OthersViews = () => import('../src/views/othersViews.vue')
 const SettingViews = () => import('../src/views/settingViews.vue')
+const ModLoaderViews = () => import('../src/views/modLoaderViews.vue')
 const routes = [
     {
         path: '/',
@@ -93,6 +94,16 @@ const routes = [
             keywords: ''
         },
         component: SettingViews
+    },
+    {
+        path: '/modloader',
+        name: 'modloader',
+        meta: {
+            title: 'modloader',
+            description: '',
+            keywords: ''
+        },
+        component: ModLoaderViews
     },
     {
         path: '/empty',

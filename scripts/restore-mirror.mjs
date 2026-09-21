@@ -2,6 +2,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { applyInstalledMods } from './apply-installed-mods.mjs';
 
 const SITE = 'D:\\X-drive\\IdeaProjects\\MCBlock蓝图编辑\\MCBlock-Studio-源码版\\site';
 const WEB = 'D:\\X-drive\\IdeaProjects\\McSTools\\src-tauri\\data\\editor\\web';
@@ -48,3 +49,8 @@ const size = (p) => (fs.existsSync(p) ? fs.statSync(p).size : -1);
 console.log('studio/editor/index.html =', size(path.join(WEB, 'studio', 'editor', 'index.html')));
 console.log('chunk 4180 =', size(path.join(WEB, '_next', 'static', 'chunks', '4180.48758e1c562b9fbd.js')));
 console.log('chunk 6260 =', size(path.join(WEB, '_next', 'static', 'chunks', '6260-669e0e1261bc8740.js')));
+
+// 换镜像后重灌所有已启用模组方块（不依赖 jar，从缓存恢复）
+const modResult = applyInstalledMods();
+console.log('re-applied mod packs after restore:', modResult.applied);
+modResult.missing.forEach((m) => console.log('  ! mod reapply failed: ' + m));

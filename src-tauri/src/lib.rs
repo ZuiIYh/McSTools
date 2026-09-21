@@ -107,7 +107,13 @@ pub fn run() {
             editor::editor_url,
             editor::editor_url_for_schematic,
             editor::open_editor,
-            editor::open_editor_for_schematic
+            editor::open_editor_for_schematic,
+            editor::mods::preview_mod_pack,
+            editor::mods::install_mod_pack,
+            editor::mods::list_mod_packs,
+            editor::mods::enable_mod_pack,
+            editor::mods::disable_mod_pack,
+            editor::mods::uninstall_mod_pack
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

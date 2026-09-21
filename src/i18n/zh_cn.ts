@@ -728,5 +728,25 @@ export default {
         content6: '特殊样式：① 𝟙𝟚𝟛₄₅₆ ⓺⓻⓼⓽',
       }
     }
+  },
+  modloader: {
+    title: '模组装载',
+    installHeading: '装载新模组',
+    selectFile: '选择模组文件 (.jar / .zip)',
+    parsing: '正在解析模组…',
+    modid: '模组 ID',
+    blocksFound: '可注册方块',
+    missing: '缺贴图方块',
+    namespaces: '命名空间',
+    missingList: '以下方块无可用贴图',
+    more: '等另外 {n} 个',
+    install: '安装到编辑器',
+    installedHeading: '已装载模组',
+    disabled: '已禁用',
+    blockCount: '{n} 个方块',
+    imageCount: '{n} 张贴图',
+    uninstall: '卸载',
+    noInstalled: '还没有装载任何模组。选择一个模组文件即可开始。',
+    note: '提示：卸载会彻底移除方块与缓存；禁用仅让编辑器暂时看不见，可随时重新启用。换编辑器镜像后会自动重载已启用模组。'
   }
-} 
+}

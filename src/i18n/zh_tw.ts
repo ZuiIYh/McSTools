@@ -728,5 +728,25 @@
                 content6: '特殊樣式：① 𝟙𝟚𝟛₄₅₆ ⓺⓻⓼⓽',
             }
         }
-    }
+    },
+  modloader: {
+    title: '模組裝載',
+    installHeading: '裝載新模組',
+    selectFile: '選擇模組檔案 (.jar / .zip)',
+    parsing: '正在解析模組…',
+    modid: '模組 ID',
+    blocksFound: '可註冊方塊',
+    missing: '缺貼圖方塊',
+    namespaces: '命名空間',
+    missingList: '以下方塊無可用貼圖',
+    more: '等另外 {n} 個',
+    install: '安裝到編輯器',
+    installedHeading: '已裝載模組',
+    disabled: '已停用',
+    blockCount: '{n} 個方塊',
+    imageCount: '{n} 張貼圖',
+    uninstall: '解除安裝',
+    noInstalled: '還沒有裝載任何模組。選擇一個模組檔案即可開始。',
+    note: '提示：解除安裝會徹底移除方塊與快取；停用僅讓編輯器暫時看不見，可隨時重新啟用。更換編輯器鏡像後會自動重載已啟用模組。'
+  }
 }

@@ -728,5 +728,25 @@ export default {
       tooltip: 'すべての開発者と代表者はAGPL V3ライセンスに準拠する必要があり、修正と配布にはすべての開発者とライセンスのクレジットが必要です',
       author: '作者'
     }
+  },
+  modloader: {
+    title: 'MODローダー',
+    installHeading: '新しいMODを導入',
+    selectFile: 'MODファイルを選択 (.jar / .zip)',
+    parsing: 'MODを解析中…',
+    modid: 'MOD ID',
+    blocksFound: '登録可能なブロック',
+    missing: 'テクスチャ欠けブロック',
+    namespaces: '名前空間',
+    missingList: 'テクスチャが見つからないブロック',
+    more: 'ほか {n} 件',
+    install: 'エディタに導入',
+    installedHeading: '導入済みMOD',
+    disabled: '無効',
+    blockCount: 'ブロック {n} 個',
+    imageCount: 'テクスチャ {n} 枚',
+    uninstall: 'アンインストール',
+    noInstalled: 'まだMODが導入されていません。MODファイルを選択してください。',
+    note: 'アンインストールはブロックとキャッシュを完全に削除します。無効化は一時的に非表示にするだけで、いつでも再有効化できます。エディタ镜像を差し替えても有効なMODは自動で再読み込みされます。'
   }
-} 
+}

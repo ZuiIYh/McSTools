@@ -70,6 +70,7 @@
     "resources": [
       "data/**/*",
       "data/resource/*",
+      "../scripts/**/*",
       "../dist/**/*"
     ],
     "windows": {

@@ -1,0 +1,16 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const r = 'D:/X-drive/IdeaProjects/McSTools';
+const db = JSON.parse(fs.readFileSync(r + '/src-tauri/data/editor/web/uploads/buildings/blockID/minecraft_blocks_database.json', 'utf8'));
+const createEntries = db.filter(e => (e.minecraft_ids || []).some(m => m.id && m.id.startsWith('create:'))).length;
+const imgsDir = r + '/src-tauri/data/editor/web/uploads/buildings/blockID/images';
+const imagesPng = fs.readdirSync(imgsDir).filter(f => f.startsWith('create__')).length;
+const cacheDir = r + '/src-tauri/data/editor/import/mods/create';
+const cachePng = fs.existsSync(cacheDir) ? fs.readdirSync(cacheDir).filter(f => f.startsWith('create__')).length : 0;
+const mf = r + '/src-tauri/data/editor/import/mods/create.manifest.json';
+const enabled = fs.existsSync(mf) ? JSON.parse(fs.readFileSync(mf, 'utf8')).enabled : 'NO_MANIFEST';
+console.log('[verify] db_total=' + db.length);
+console.log('[verify] create_db_entries=' + createEntries);
+console.log('[verify] images_png=' + imagesPng);
+console.log('[verify] cache_png=' + cachePng);
+console.log('[verify] manifest_enabled=' + enabled);

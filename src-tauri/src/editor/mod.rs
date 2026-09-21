@@ -1,4 +1,5 @@
 pub mod offline_server;
+pub mod mods;
 
 use std::fs;
 use std::path::{Path, PathBuf};
