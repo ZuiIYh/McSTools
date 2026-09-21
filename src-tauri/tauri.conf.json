@@ -69,7 +69,6 @@
     "createUpdaterArtifacts": true,
     "resources": [
       "data/**/*",
-      "data/resource/*",
       "../scripts/**/*",
       "../dist/**/*"
     ],
