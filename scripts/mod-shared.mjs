@@ -87,3 +87,96 @@ export function existingIds(db) {
   for (const e of db) for (const m of (e.minecraft_ids || [])) s.add(m.id);
   return s;
 }
+
+/**
+ * 从源 blockstate 推导方块的**默认属性**（与 vanilla 的 block-default-properties.json 同构）。
+ *
+ * 为什么必须有：渲染器（8652）的 `uO(props, defaults)` 只在实例属性**缺失**时用默认值补齐，
+ * 而 9703 的 `matchesVariant` 要求变体键里的**每个** `key=value` 都在属性对象里存在且相等；
+ * 缺一个 → 该变体不匹配，全不匹配 → `getModelVariants` 返回 `[]` → `getMesh` 产出 0 面
+ * → `w()` 落洋红兜底、`k()`（单方块预览，直接传 `{}`）返回 null。
+ * 我们以前给模组方块写空 `{}`，于是「属性不全 / 完全没带属性」的调用路径全都渲染不出来。
+ *
+ * 取值策略：
+ *   1) 从 `variants` 的键与 `multipart[].when`（含 OR/AND 与 `a|b` 候选）统计每个属性值与频次；
+ *   2) 每属性先试「偏好值」（false / north / y / lower …，贴近 vanilla 默认），否则取众数；
+ *   3) 若这组值能命中至少一个变体键或 when 分支 → 直接采用（等价于 vanilla 的「完整默认值」）；
+ *   4) 否则退回「最具代表性的单个状态」：各属性值频次之和最高、且条件最少的那个键。
+ *
+ * 只产出**源 blockstate 里真实出现过**的属性，绝不会凭空造出匹配不上的键。
+ * @param {object} bs 源 blockstate
+ * @returns {Record<string,string>}
+ */
+export function deriveDefaultProps(bs) {
+  if (!bs || typeof bs !== 'object') return {};
+  const counts = new Map();   // prop -> Map(val -> count)
+  const combos = [];          // 候选状态：{ prop: val }
+  const bump = (p, v) => {
+    if (!counts.has(p)) counts.set(p, new Map());
+    const m = counts.get(p);
+    m.set(v, (m.get(v) || 0) + 1);
+  };
+  const addKey = (str) => {
+    const o = {};
+    for (const kv of String(str).split(',')) {
+      const i = kv.indexOf('=');
+      if (i <= 0) continue;
+      const p = kv.slice(0, i).trim();
+      const v = kv.slice(i + 1).trim();
+      if (!p || !v || v.includes('|')) continue;   // 空键 ''、含候选分隔符的键跳过
+      if (p in o) continue;
+      o[p] = v;
+      bump(p, v);
+    }
+    if (Object.keys(o).length) combos.push(o);
+  };
+  const addWhen = (w) => {
+    if (!w || typeof w !== 'object') return;
+    if (Array.isArray(w.OR)) { for (const x of w.OR) addWhen(x); return; }
+    if (Array.isArray(w.AND)) { for (const x of w.AND) addWhen(x); return; }
+    const o = {};
+    for (const [p, raw] of Object.entries(w)) {
+      const v = String(raw).split('|')[0].trim();   // "true|false" 取第一个候选
+      if (!p || !v) continue;
+      o[p] = v;
+      bump(p, v);
+    }
+    if (Object.keys(o).length) combos.push(o);
+  };
+  for (const k of Object.keys(bs.variants || {})) addKey(k);
+  for (const p of bs.multipart || []) addWhen(p.when);
+  if (!counts.size) return {};
+
+  const rank = (v) => (v === 'false' ? 0 : v === 'none' ? 1 : v === 'true' ? 9 : 5);
+  const PREFER = {
+    facing: ['north', 'up', 'down'], face: ['floor', 'wall'], axis: ['y', 'x', 'z'],
+    half: ['lower', 'bottom'], hinge: ['left'], rotation: ['0'],
+    part: ['none', 'middle'], shape: ['straight', 'single'], slope: ['horizontal'],
+  };
+  const prefer = (p, vals) => {
+    const all = [...vals.keys()];
+    if (all.every((v) => v === 'true' || v === 'false') && vals.has('false')) return 'false';
+    for (const v of PREFER[p] || []) if (vals.has(v)) return v;
+    let best = null, bestN = -1;
+    for (const [v, n] of vals) {
+      if (n > bestN || (n === bestN && rank(v) < rank(best))) { best = v; bestN = n; }
+    }
+    return best;
+  };
+
+  const per = {};
+  for (const [p, m] of counts) per[p] = prefer(p, m);
+
+  const hits = (o) => combos.some((c) => Object.entries(c).every(([p, v]) => o[p] === v));
+  if (hits(per)) return per;
+
+  // 退回：频次之和最高的候选键（并列时条件更少的优先 —— 匹配面更大）
+  let best = null, bestScore = -1, bestN = Infinity;
+  for (const c of combos) {
+    let s = 0;
+    for (const [p, v] of Object.entries(c)) s += (counts.get(p) || new Map()).get(v) || 0;
+    const n = Object.keys(c).length;
+    if (s > bestScore || (s === bestScore && n < bestN)) { best = c; bestScore = s; bestN = n; }
+  }
+  return best ? { ...per, ...best } : per;
+}

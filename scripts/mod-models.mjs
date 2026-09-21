@@ -26,7 +26,7 @@ import { decodePng, encodePng, resizeNearest } from './png.mjs';
 import { bakeObjGeometry } from './mod-obj.mjs';
 import {
   MCMETA_DIR, ATLAS_PNG, ATLAS_UV, BLOCK_MODELS, BLOCK_DEFS, BLOCK_PROPS, ATLAS_REGISTRY, IMPORT_DIR,
-  modelKeyFor, crossModParentKey,
+  modelKeyFor, crossModParentKey, deriveDefaultProps,
 } from './mod-shared.mjs';
 
 export const TILE = 16;
@@ -81,6 +81,26 @@ function walkFiles(d, o = [], rel = '') {
 }
 
 /** 从缓存的 assets 目录（import/mods/<modid>/assets）读出 blockstates / models / 贴图索引 */
+/**
+ * Flywheel 的 OBJ 命名约定：模型 JSON 是空占位时，真实几何放在**同名 .obj**。
+ * Flywheel 的 PartialModel 按「命名空间:block/xxx」路径去 load「models/block/xxx.obj」，
+ * 所以 JSON 里既没有 loader 也没有 model 字段 —— 原来的 neoforge:obj 分支必然漏掉它们
+ * （典型：create:block/track/ascending 对应 models/block/track/ascending.obj，蓝图里 44/76 个轨道变体）。
+ * 只在链上没有任何 elements 时调用，且必须真的存在同名 .obj，否则返回 null。
+ */
+function bakeObjByConvention(chain, tex, assets) {
+  if (!assets || !assets.objs) return null;
+  for (const n of chain) {
+    const rel = 'models/' + String(n.key).replace(/^[a-zA-Z0-9_.-]+:/, '') + '.obj';
+    const objText = assets.objs.get(rel);
+    if (!objText) continue;
+    const mtlText = assets.mtls ? (assets.mtls.get(rel.replace(/\.obj$/i, '.mtl')) || null) : null;
+    const els = bakeObjGeometry({ objText, mtlText, textures: tex, flipV: true });
+    if (els && els.length) return els;
+  }
+  return null;
+}
+
 export function loadModAssets(modid, ns = modid) {
   const base = path.join(IMPORT_DIR, modid, 'assets', ns);
   if (!fs.existsSync(base)) throw new Error(`缺少缓存资源: ${base}（需要重新用 jar 安装一次）`);
@@ -198,7 +218,8 @@ export function flattenModel(key, modModels, editorModels, assets) {
   // neoforge:obj 兜底：几何在外部 .obj 文件里（blaze_burner / 阀手轮 / 飞轮 / 水车 / 轨道…）。
   // 必须在 tex 已经解析完（上面的 resolveVar 循环）之后调用 —— MTL 的 `map_Kd #0` 要按槽名查这张表。
   if (!elements) {
-    const baked = bakeObjFromChain(chain, tex, assets);
+    // ① JSON 里显式声明的 neoforge:obj  ② Flywheel 的「同名 .obj」约定
+    const baked = bakeObjFromChain(chain, tex, assets) || bakeObjByConvention(chain, tex, assets);
     if (baked) { elements = baked; objBaked = true; }
   }
   if (!elements) return { textures: tex, elements: null, textureSize, objBaked: false };
@@ -361,6 +382,10 @@ function pipeCross(f) {
  */
 function synthGeom(f, ref) {
   if (!f) return null;
+  // 「空气」占位模型（minecraft:block/air，只带一个 particle 槽）绝不能合成成实体方块：
+  // 它表示「这里什么都没有」（如 create:track 的 shape=none）。合成几何会让它变成一个突兀的
+  // 立方体（蓝图里轨道每空一段就冒出一个方块）。返回 null 让上层丢掉这一支 → 该变体渲染为空。
+  if (/(^|:)block\/air$/.test(String(ref))) return null;
   const slots = Object.keys(f.textures || {}).filter((s) => typeof f.textures[s] === 'string' && f.textures[s] && !f.textures[s].startsWith('#'));
   const slot = slots.find((s) => s !== 'particle') || slots[0];
   if (!slot) return null;
@@ -450,6 +475,7 @@ export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex
   const objBaked = new Set();   // 几何来自 neoforge:obj 外部 .obj 的方块
   const missing = [];
   const air = new Set();
+  const defaultProps = {};   // blockId -> 默认属性（渲染器 uO 的兜底来源）
 
   const noteTex = (blockId, texId) => {
     if (!texId) return;
@@ -614,8 +640,10 @@ export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex
           .filter(Boolean),
       };
     }
+    // 默认属性：源 blockstate 的变体键 / multipart.when 是唯一可信来源
+    defaultProps[blockId] = deriveDefaultProps(bs);
   }
-  return { defs, models: outModels, texNeed, blockTex, ported, cube, missing, air, objBaked };
+  return { defs, models: outModels, texNeed, blockTex, ported, cube, missing, air, objBaked, defaultProps };
 }
 
 // ---------------- 图集写入 ----------------
@@ -1064,7 +1092,8 @@ export function applyModModels(modid, blockIds, opts = {}) {
   }
   for (const [blockId, d] of Object.entries(finalDefs)) {
     defs[blockId] = d;
-    props[blockId] = {};
+    // 默认属性由源 blockstate 推导（此前恒为 {}，让「属性不全 / 完全没带属性」的调用路径渲染不出来）
+    props[blockId] = (geo.defaultProps && geo.defaultProps[blockId]) || {};
   }
 
   // 原版条目零改动断言
