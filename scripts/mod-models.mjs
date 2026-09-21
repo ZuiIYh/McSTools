@@ -519,6 +519,20 @@ function remapFlywheelStatic(bs, models) {
   return n;
 }
 
+/**
+ * ★ 传送带带轮（belt_pulley）的「带面」合成：Create 的静态 pulley 模型**只有滚筒、没有带面**——
+ *   带子绕过滚筒那段同样由 Flywheel 动态绘制，所以带子一到滚筒处就"断了"，只剩一个光滚筒。
+ *   这里把带面（belt/middle、belt/middle_bottom）**预旋转到 pulley 的坐标系**后并入同一模型。
+ *   pulley 变体的旋转固定为 x=90 y=270（见 remapFlywheelStatic）。渲染器按「先 Rx(-x) 后 Ry(-y)」
+ *   组合、以方块中心 (8,8,8) 为原点，得 M(x,y,z) = (-y, z, -x)，故预变换取其逆
+ *   M⁻¹(x,y,z) = (-z, -x, y)。渲染时带子正好回到水平，并贴在滚筒两侧。
+ */
+const PULLEY_FACE = { up: 'south', down: 'north', east: 'down', west: 'up', north: 'east', south: 'west' };
+const toPulleySpace = (p) => {
+  const d = [p[0] - 8, p[1] - 8, p[2] - 8];
+  return [8 - d[2], 8 - d[0], 8 + d[1]];
+};
+
 export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex = new Map(), airBlocks = new Set()) {
   const { blockstates, models: modModels, textureIndex } = assets;
   const outModels = {};
@@ -675,6 +689,50 @@ export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex
               faces[dir] = ns !== undefined ? { ...fv, texture: '#' + ns } : { ...fv };
             }
             els.push({ ...el, faces });
+          }
+        }
+      }
+
+      // ★ 带轮（belt_pulley）：并入「预旋转到 pulley 坐标系」的带面（上带面 + 下回程带），
+      //   让带子在滚筒处连续，而不是只剩一个光滚筒（见 toPulleySpace 注释）。
+      const pm = /^([^\s:]+:block)\/belt_pulley$/.exec(ref);
+      if (pm) {
+        let nextSlot2 = 90;
+        // 注意：readModel 读的是**源**模型，belt/middle 在这里仍是只有上带面的 2 个元素，
+        // 下回程带必须另取 belt/middle_bottom（上面 {part}_bottom 的合并只作用于带段自身的落地模型）
+        for (const br of [`${pm[1]}/belt/middle`, `${pm[1]}/belt/middle_bottom`]) {
+          const fb = flat.get(br) || readModel(br);
+          if (!fb || !Array.isArray(fb.elements) || !fb.elements.length) continue;
+          const slotMap = new Map();
+          for (const [slot, val] of Object.entries(fb.textures || {})) {
+            if (typeof val !== 'string' || !val) continue;
+            const want = norm(val);
+            const dup = Object.entries(texSrc).find(([, v]) => v === want);
+            if (dup) { slotMap.set(slot, dup[0]); continue; }
+            let ns = String(nextSlot2++);
+            while (texSrc[ns] !== undefined) ns = String(nextSlot2++);
+            texSrc[ns] = want;
+            slotMap.set(slot, ns);
+          }
+          if (els === f.elements) els = [...f.elements];
+          for (const el of fb.elements) {
+            const a = toPulleySpace(el.from);
+            const b = toPulleySpace(el.to);
+            const faces = {};
+            for (const [dir, fv] of Object.entries(el.faces || {})) {
+              if (!fv) continue;
+              const nd = PULLEY_FACE[dir];
+              if (!nd) continue;
+              const raw = String(fv.texture || '');
+              const slot = raw.startsWith('#') ? raw.slice(1) : raw;
+              const ns = slotMap.get(slot);
+              faces[nd] = ns !== undefined ? { ...fv, texture: '#' + ns } : { ...fv };
+            }
+            els.push({
+              from: [Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.min(a[2], b[2])],
+              to: [Math.max(a[0], b[0]), Math.max(a[1], b[1]), Math.max(a[2], b[2])],
+              faces,
+            });
           }
         }
       }
