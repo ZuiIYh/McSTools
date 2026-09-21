@@ -37,31 +37,30 @@ function attachSigningKey(target) {
       ? fs.readFileSync(passPath, 'utf8').replace(/\r?\n$/, '')
       : '';
   }
-  // 密钥对一致性自检：minisign 载荷 [2..10] 小端即为 keyID，必须与 tauri.conf.json 的 pubkey 相同
-  const keyIdOf = (text) => {
-    const line = String(text)
-      .trim()
-      .split('\n')
-      .map((l) => l.trim())
-      .find((l) => /^[A-Za-z0-9+/=]{40,}$/.test(l));
-    if (!line) return null;
-    const raw = Buffer.from(line, 'base64');
-    if (raw.length < 10) return null;
-    return Buffer.from(raw.subarray(2, 10)).reverse().toString('hex').toUpperCase();
+  /**
+   * 公钥 keyID：minisign 公钥载荷 [2..10] 小端。注意 .key/.key.pub 文件本身就是 base64
+   * （外层解码后是「注释行 + base64」两行文本），所以要解两层。
+   * 加密私钥（rsign encrypted secret key）载荷布局不同，取不到 keyID —— 不再据此判配对，
+   * 改由打包产物 .sig 里的 keyID 与公钥比对（.sig 载荷同为 [2..10]）。
+   */
+  const keyIdFromB64File = (content) => {
+    try {
+      const inner = Buffer.from(String(content).trim(), 'base64').toString('utf8');
+      const line = inner
+        .split('\n')
+        .map((l) => l.trim())
+        .find((l) => /^[A-Za-z0-9+/=]{40,}$/.test(l));
+      if (!line) return null;
+      const raw = Buffer.from(line, 'base64');
+      return raw.length < 10 ? null : Buffer.from(raw.subarray(2, 10)).reverse().toString('hex').toUpperCase();
+    } catch {
+      return null;
+    }
   };
   try {
     const conf = JSON.parse(fs.readFileSync(path.join(root, 'src-tauri', 'tauri.conf.json'), 'utf8'));
-    const pubRaw = conf?.plugins?.updater?.pubkey || conf?.bundle?.updater?.pubkey || '';
-    const pub = Buffer.from(pubRaw, 'base64').toString('utf8');
-    const privId = keyIdOf(key);
-    const pubId = keyIdOf(pub);
-    if (privId && pubId && privId !== pubId) {
-      console.warn(
-        `[sign] ⚠️ 本地私钥与 tauri.conf.json 的 pubkey 不是一对（私钥 keyID=${privId} / pubkey keyID=${pubId}）——更新器会拒绝这些签名`
-      );
-    } else {
-      console.log(`[sign] 已载入本地私钥 ${keyPath}${privId ? `（keyID=${privId}）` : ''}`);
-    }
+    const pubId = keyIdFromB64File(conf?.plugins?.updater?.pubkey || conf?.bundle?.updater?.pubkey || '');
+    console.log(`[sign] 已载入本地私钥 ${keyPath}${pubId ? `（公钥 keyID=${pubId}）` : ''}`);
   } catch {
     console.log(`[sign] 已载入本地私钥 ${keyPath}`);
   }
