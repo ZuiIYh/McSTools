@@ -39,6 +39,29 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
+      # 诊断用：先自己跑一遍完整打包并留日志（cargo 已缓存，第二次几乎瞬时），
+      # 失败时把日志挂到公开 release `ci-logs`，便于无仓库权限也能读到真实报错。
+      - name: Preflight build (capture log)
+        id: preflight
+        continue-on-error: true
+        shell: bash
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_PRIVATE_KEY_PASSWORD }}
+        run: |
+          pnpm tauri build --verbose 2>&1 | tee ci-build.log
+          exit ${PIPESTATUS[0]}
+      - name: Upload build log (always)
+        if: always()
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -f ci-build.log ]; then
+            tail -c 60000 ci-build.log > ci-build-tail.log
+            gh release view ci-logs >/dev/null 2>&1 || gh release create ci-logs --title "CI build logs" --notes "调试用日志"
+            gh release upload ci-logs ci-build-tail.log --clobber
+          fi
       - name: Build the app
         id: build
         uses: tauri-apps/tauri-action@v0
