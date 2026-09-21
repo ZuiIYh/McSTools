@@ -422,12 +422,48 @@ export { modelKeyFor };   // 实现统一在 mod-shared.mjs（加载器解析跨
  * 但包里**确实带着**按属性命名的真实静态模型，只是 blockstate 从不引用：
  *   part=start/middle/end/pulley  →  belt/start · belt/middle · belt/end · belt_pulley
  *   slope=horizontal              →  {dir}/{part}          （平带）
- *   slope=upward/downward/sideways→  {dir}/diagonal_{part}  （斜带/侧带，近似）
+ *   slope=upward/downward         →  {dir}/diagonal_{part}  （45° 斜段，坐标自带斜度）
+ *   slope=vertical/sideways       →  {dir}/{part} 并置 x=90（把平带立起来）
+ * 后者的依据：包里**没有**竖直带面模型（belt/ 下只有 diagonal_* 与 *_bottom），而 casing 分支里
+ * vertical 与 sideways 共用 `belt_casing/sideways_*`（一个竖板）；把平带模型立起来才是同形近似，
+ * 直接套 diagonal_* 会得到 45° 斜段 —— 这正是「垂直/侧向传送带形状朝向全错」的原因。
+ * ★ 朝向基准取同一属性组合（除 casing）下 `casing=true` 的 (x,y)：源里 casing=false 是 Flywheel
+ *   占位，它的 y 与真实朝向**不总一致**（vertical 差一个象限，如 facing=north: 占位 180 / 真实 270）。
  * 这套命名与 casing 分支完全同构（belt_casing/{horizontal,diagonal,sideways}_{part}）。
  * 目标模型不存在就保持原样（其它模组以 /particle 结尾的占位不受影响）。
  */
 function remapFlywheelStatic(bs, models) {
   if (!bs || !models) return 0;
+  const propsOf = (key) => {
+    const o = {};
+    for (const kv of String(key).split(',')) {
+      const i = kv.indexOf('=');
+      if (i > 0) o[kv.slice(0, i)] = kv.slice(i + 1);
+    }
+    return o;
+  };
+  /** 归一化属性键（去掉 casing，按键名排序），用于找「同组合的 casing=true 兄弟项」 */
+  const normKey = (o) =>
+    Object.keys(o)
+      .filter((k) => k !== 'casing' && o[k] !== undefined && !String(o[k]).includes('|') && !String(o[k]).includes(' '))
+      .sort()
+      .map((k) => `${k}=${o[k]}`)
+      .join(',');
+  /**
+   * 静态模型只覆盖水平/斜向；casing=true 分支才是真实朝向基准：
+   * 同一属性组合（除 casing）下 casing=true 的 (x,y) 与我们合成的带面必须一致，
+   * 否则会出现「朝向差 90°」。vertical 尤为明显（占位模型的 y 与真实朝向差一个象限）。
+   */
+  const orient = new Map();
+  if (bs.variants) {
+    for (const [k, v] of Object.entries(bs.variants)) {
+      const o = propsOf(k);
+      if (o.casing !== 'true') continue;
+      const e = Array.isArray(v) ? v[0] : v;
+      if (!e || typeof e !== 'object') continue;
+      orient.set(normKey(o), { x: e.x ?? 0, y: e.y ?? 0 });
+    }
+  }
   const fix = (entry, props) => {
     const arr = Array.isArray(entry) ? entry : [entry];
     let n = 0;
@@ -442,21 +478,28 @@ function remapFlywheelStatic(bs, models) {
       const part = props && props.part;
       const slope = props && props.slope;
       if (!part) continue;
+      // 立起来的带（vertical/sideways）在包里没有独立的带面模型，
+      // 用平带模型（{base}/{part}）「立起 90°」近似；斜带用 diagonal_*。
+      const upright = slope === 'vertical' || slope === 'sideways';
       const cand = [];
       if (part === 'pulley') cand.push(`${ns}:${base}_pulley`);
-      else if (slope === 'horizontal') cand.push(`${ns}:${base}/${part}`);
+      else if (slope === 'horizontal' || upright) cand.push(`${ns}:${base}/${part}`);
       else cand.push(`${ns}:${base}/diagonal_${part}`);
-      for (const c of cand) if (models.has(c)) { e.model = c; n++; break; }
+      let ok = false;
+      for (const c of cand) if (models.has(c)) { e.model = c; n++; ok = true; break; }
+      if (!ok) continue;
+      const ref = orient.get(normKey(props));
+      if (ref) {
+        if (upright) {
+          e.x = 90;              // 把平带立起来
+          e.y = ref.y;           // 朝向取 casing 基准（源占位值 vertical 差 90°）
+        } else {
+          e.x = ref.x;
+          e.y = ref.y;
+        }
+      }
     }
     return n;
-  };
-  const propsOf = (key) => {
-    const o = {};
-    for (const kv of String(key).split(',')) {
-      const i = kv.indexOf('=');
-      if (i > 0) o[kv.slice(0, i)] = kv.slice(i + 1);
-    }
-    return o;
   };
   let n = 0;
   if (bs.variants) for (const [k, v] of Object.entries(bs.variants)) n += fix(v, propsOf(k));
