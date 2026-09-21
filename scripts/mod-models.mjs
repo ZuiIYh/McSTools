@@ -638,14 +638,55 @@ export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex
       if (!f) continue;                    // 解析不了 → 丢掉这一支（见上）
       const mk = modelKeyFor(modid, ref);
       keyOf.set(ref, mk);
-      outModels[mk] = { elements: f.elements };
+
+      // ★ 传送带带段（casing=false 的 belt/{middle,end,start}）：包里另有一整套「下回程带」模型
+      //   （{part}_bottom，贴图 create:block/belt_offset），但 blockstate **从不引用**它们。
+      //   只渲染上带面时，带子就是一片悬空的 2px 薄板，观感上等于「带面没渲染」。
+      //   这里把下回程带并进同一个模型，让带段成为完整带圈（上带面 + 下回程），朝向/坐标同源可直接合。
+      let els = f.elements;
+      const texSrc = {};
+      for (const [slot, val] of Object.entries(f.textures || {})) {
+        if (typeof val === 'string' && val) texSrc[slot] = norm(val);
+      }
+      const bm = /^([^\s:]+:block\/belt)\/(middle|end|start)$/.exec(ref);
+      if (bm) {
+        const refB = `${bm[1]}/${bm[2]}_bottom`;
+        const fB = flat.get(refB) || readModel(refB);
+        if (fB && Array.isArray(fB.elements) && fB.elements.length) {
+          // 槽名可能撞车（上带面用 "0"、下回程带用 "1"，通常不撞）→ 撞了就挪到高位数字
+          const slotMap = new Map();
+          let nextSlot = 90;
+          for (const [slot, val] of Object.entries(fB.textures || {})) {
+            if (typeof val !== 'string' || !val) continue;
+            const want = norm(val);
+            const dup = Object.entries(texSrc).find(([, v]) => v === want);
+            if (dup) { slotMap.set(slot, dup[0]); continue; }
+            if (texSrc[slot] === undefined) { texSrc[slot] = want; slotMap.set(slot, slot); }
+            else { const ns = String(nextSlot++); texSrc[ns] = want; slotMap.set(slot, ns); }
+          }
+          els = [...f.elements];
+          for (const el of fB.elements) {
+            const faces = {};
+            for (const [dir, fv] of Object.entries(el.faces || {})) {
+              if (!fv) continue;
+              const raw = String(fv.texture || '');
+              const slot = raw.startsWith('#') ? raw.slice(1) : raw;
+              const ns = slotMap.get(slot);
+              faces[dir] = ns !== undefined ? { ...fv, texture: '#' + ns } : { ...fv };
+            }
+            els.push({ ...el, faces });
+          }
+        }
+      }
+
+      outModels[mk] = { elements: els };
       // textures 槽表必须整份保留：face.texture 现在是 "#槽名"，只留 particle 会让纹理再次解析失败
       const texOut = {};
-      for (const [slot, val] of Object.entries(f.textures || {})) {
+      for (const [slot, val] of Object.entries(texSrc)) {
         if (typeof val === 'string' && val) texOut[slot] = norm(val);
       }
       if (Object.keys(texOut).length) outModels[mk].textures = texOut;
-      for (const el of f.elements) {
+      for (const el of els) {
         for (const fv of Object.values(el.faces || {})) {
           if (fv && fv.texture) {
             const raw = String(fv.texture);
