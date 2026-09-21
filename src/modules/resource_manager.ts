@@ -3,6 +3,7 @@ import { mkdir, readDir, readTextFile, writeFile, readFile, remove } from '@taur
 import { join, resolveResource } from '@tauri-apps/api/path';
 import { ref } from 'vue';
 import { toast } from './others.ts';
+import { loadBlockResources } from './blockResources';
 
 const GITHUB_RAW_BASE = 'https://ghcr.mcschematic.top/https://raw.githubusercontent.com/guapi-exe/mcstools_resources/master';
 const RESOURCES_JSON_URL = `${GITHUB_RAW_BASE}/resources.json`;
@@ -73,6 +74,22 @@ export async function fetchRemoteResources(): Promise<Record<string, RemoteResou
     }
 }
 
+/**
+ * 判定本地这份资源包「能不能用」。
+ * 只认 McSTools 实际会读的文件（config.json 由调用方先读，这里只看图标图集）——
+ * 下载中途失败、或远程清单里的空壳包（例如 `gto`，只有一份 config.json，其余全 404）
+ * 都会因为这里返回 false 而被当作「未安装」，而不是显示成已安装却什么都用不了。
+ */
+async function isCompletePack(modPath: string): Promise<boolean> {
+    try {
+        const icons = await readDir(await join(modPath, 'icons'));
+        const has = (name: string) => icons.some((f) => f.name === name);
+        return has('atlas.png') && has('data.min.json');
+    } catch {
+        return false;
+    }
+}
+
 export async function getLocalResources(): Promise<Record<string, LocalResourceConfig>> {
     const localResources: Record<string, LocalResourceConfig> = {};
     
@@ -88,6 +105,10 @@ export async function getLocalResources(): Promise<Record<string, LocalResourceC
                 const configPath = await join(modPath, 'config.json');
                 const configText = await readTextFile(configPath);
                 const config: LocalResourceConfig = JSON.parse(configText);
+                if (!(await isCompletePack(modPath))) {
+                    console.warn(`[resources] ${dir.name} 本地文件不完整，按未安装处理`);
+                    continue;
+                }
                 localResources[dir.name] = config;
             } catch (err) {
                 console.warn(`Failed to read config for ${dir.name}:`, err);
@@ -231,32 +252,52 @@ export async function downloadResource(resourceKey: string): Promise<boolean> {
         }
         
         const totalFiles = RESOURCE_FILES.length;
-        let downloadedFiles = 0;
-        
+        let processed = 0;
+        const failed: string[] = [];
+
         for (const filePath of RESOURCE_FILES) {
             const url = `${GITHUB_RAW_BASE}/${resourceKey}/${filePath}`;
             const localPath = await join(modPath, filePath);
-            
+
             try {
                 console.log(`Downloading: ${url}`);
                 const data = await downloadFile(url);
                 await writeFile(localPath, data);
-                
-                downloadedFiles++;
-                updateProgress(Math.round((downloadedFiles / totalFiles) * 100));
             } catch (err) {
-                console.warn(`Failed to download ${filePath}:`, err);
-                downloadedFiles++;
-                updateProgress(Math.round((downloadedFiles / totalFiles) * 100));
+                // 以前这里把失败也计入「已下载」，于是整包 404 也会提示「下载完成」
+                failed.push(filePath);
+                console.warn(`[resources] 下载失败 ${filePath}:`, err);
             }
+            processed++;
+            updateProgress(Math.round((processed / totalFiles) * 100));
         }
-        
-        toast.success(`资源 ${resourceKey} 下载完成！`);
-        
-        downloadingResources.value.delete(resourceKey);
-        await loadResourceList();
 
-        return true;
+        if (failed.length === 0) {
+            toast.success(`资源 ${resourceKey} 下载完成！`);
+        } else if (failed.includes('config.json')) {
+            // config.json 是「本地有没有装」的唯一判据，它没拿到就不该留下半个目录
+            try { await remove(modPath, { recursive: true }); } catch { /* 清不掉也不影响判定 */ }
+            toast.error(
+                `资源 ${resourceKey} 下载失败：${failed.length}/${totalFiles} 个文件没拿到（含 config.json），已回滚为未安装。`,
+            );
+        } else {
+            toast.warning(
+                `资源 ${resourceKey} 只拿到 ${totalFiles - failed.length}/${totalFiles} 个文件，缺失：${failed.join('、')}`,
+            );
+        }
+
+        downloadingResources.value.delete(resourceKey);
+        // 覆盖更新后 icon.png 已变，先让列表缩略图缓存失效（否则还显示旧图标）
+        const staleIcon = iconUrlCache.get(resourceKey);
+        if (staleIcon) {
+            URL.revokeObjectURL(staleIcon);
+            iconUrlCache.delete(resourceKey);
+        }
+        await loadResourceList();
+        // 让新资源立刻生效，不需要重启应用（只有完整下载成功才值得刷新图标）
+        if (failed.length === 0) await loadBlockResources();
+
+        return failed.length === 0;
         
     } catch (error) {
         console.error(`Failed to download resource ${resourceKey}:`, error);
@@ -344,6 +385,8 @@ export async function deleteResource(resourceKey: string): Promise<boolean> {
         toast.success(`资源 ${resourceKey} 已卸载`);
         
         await loadResourceList();
+        // 让图标立刻消失，不需要重启应用
+        await loadBlockResources();
         
         return true;
     } catch (error) {

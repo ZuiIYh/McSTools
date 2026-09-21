@@ -1,348 +1,97 @@
 import {join, resolveResource} from '@tauri-apps/api/path';
-import { readTextFile, readDir, readFile } from '@tauri-apps/plugin-fs';
-import {
-    BlockDefinition,
-    BlockModel,
-    Identifier,
-    TextureAtlas,
-    upperPowerOfTwo
-} from "deepslate";
-import {blockResources} from "./ResourceStore";
-export const blockIconSpriteMap: Record<string, { atlasUrl: string, uv: [number, number, number, number] }> = {};
+import {readTextFile, readDir, readFile} from '@tauri-apps/plugin-fs';
 
-const yieldToMainThread = async () => {
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+/**
+ * 方块图标表：`<命名空间>:<方块路径>` → 该方块在图标图集里的切图位置。
+ *
+ * 数据来源是「设置 → 资源管理」下载的模组资源包（每个包的 `icons/atlas.png` + `icons/data.min.json`）。
+ * McSTools 自己的工具面板（方块替换 / 历史 / 统计）通过 others.ts 的 `getIconUrl()` 取图标，
+ * 所以**某个模组的图标能不能显示，取决于对应资源包装没装**。
+ *
+ * 这里只负责读图标图集。资源包里那套「方块定义 / 模型 / 贴图图集」（deepslate）在本项目中
+ * **没有任何消费方**（自研 3D 预览已下线），已于 2026-09 移除 —— 启动时不再做整张图集的
+ * 合并与解码，只读每个包的图标图集。
+ */
+export const blockIconSpriteMap: Record<string, { atlasUrl: string; uv: [number, number, number, number] }> = {};
+
+/** 上一次加载创建的 blob URL：重新加载前必须 revoke，否则每次重载都泄漏整张图标图集 */
+let activeAtlasUrls: string[] = [];
+
+interface PackIcons {
+    atlasUrl: string;
+    uvMap: Record<string, [number, number, number, number]>;
 }
 
-interface ConfigData {
-    namespace: string;
-    blockCount: number;
-    itemCount: number;
-}
-
-interface OpaqueBlocksData {
-    opaque: string[];
-}
-
-interface ResourceData {
-    namespace: string;
-    blockDefinitions: Record<string, BlockDefinition>;
-    blockModels: Record<string, BlockModel>;
-    textureAtlas: TextureAtlas;
-    atlasImage: ImageData;
-    atlasSize: number;
-    rawUvMap: Record<string, [number, number, number, number]>;
-    opaqueBlocks: Set<string>;
-    iconAtlasUrl?: string;
-    iconUvMap?: Record<string, [number, number, number, number]>;
-}
-
- 
-
-
-async function loadModResource(modName: string): Promise<ResourceData | null> {
+async function loadPackIcons(modName: string): Promise<PackIcons | null> {
     try {
         const modPath = await resolveResource(`data/resource/${modName}`);
-        
-        const configPath = await join(modPath, 'config.json');
-        const configText = await readTextFile(configPath);
-        const config: ConfigData = JSON.parse(configText);
-        
-        const assetsPath = await join(modPath, 'assets');
-        
-        const blockDefPath = await join(assetsPath, 'block_definition/data.min.json');
-        const blockDefText = await readTextFile(blockDefPath);
-        const blockstates = JSON.parse(blockDefText);
-        
-        const modelsPath = await join(assetsPath, 'model/data.min.json');
-        const modelsText = await readTextFile(modelsPath);
-        const models = JSON.parse(modelsText);
-        
-        const atlasPath = await join(assetsPath, 'atlas/data.min.json');
-        const atlasText = await readTextFile(atlasPath);
-        const uvMap = JSON.parse(atlasText);
-        
-        const opaquePath = await join(assetsPath, 'opaque/blocks.json');
-        const opaqueText = await readTextFile(opaquePath);
-        const opaqueData: OpaqueBlocksData = JSON.parse(opaqueText);
-        
-        const atlasImgPath = await join(assetsPath, 'atlas/atlas.png');
-        const atlasImgData = await readFile(atlasImgPath);
-        const atlasBlob = new Blob([new Uint8Array(atlasImgData)], { type: 'image/png' });
-        const atlasUrl = URL.createObjectURL(atlasBlob);
-        
-        const atlasImage = await new Promise<HTMLImageElement>((resolve, reject) => {
-            const image = new Image();
-            image.onload = () => {
-                URL.revokeObjectURL(atlasUrl);
-                resolve(image);
-            };
-            image.onerror = reject;
-            image.src = atlasUrl;
+        const configText = await readTextFile(await join(modPath, 'config.json'));
+        const config: { namespace?: string } = JSON.parse(configText);
+        const namespace = config.namespace || modName;
+
+        const iconsPath = await join(modPath, 'icons');
+        const iconData: Record<string, [number, number, number, number]> =
+            JSON.parse(await readTextFile(await join(iconsPath, 'data.min.json')));
+        const iconImgData = await readFile(await join(iconsPath, 'atlas.png'));
+
+        const atlasUrl = URL.createObjectURL(new Blob([new Uint8Array(iconImgData)], {type: 'image/png'}));
+        const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = reject;
+            img.src = atlasUrl;
         });
-        
-        const blockDefinitions: Record<string, BlockDefinition> = {};
-        Object.keys(blockstates).forEach(id => {
-            const fullId = `${config.namespace}:${id}`;
-            blockDefinitions[fullId] = BlockDefinition.fromJson(blockstates[id]);
-        });
-        
-        const blockModels: Record<string, BlockModel> = {};
-        Object.keys(models).forEach(id => {
-            const fullId =`${config.namespace}:${id}`;
-            blockModels[fullId] = BlockModel.fromJson(models[id]);
-        });
-        
-        const atlasSize = upperPowerOfTwo(Math.max(atlasImage.width, atlasImage.height));
-        
-        let atlasData: ImageData;
-        if (typeof OffscreenCanvas !== 'undefined') {
-            const offscreen = new OffscreenCanvas(atlasSize, atlasSize);
-            const ctx = offscreen.getContext('2d')!;
-            ctx.drawImage(atlasImage, 0, 0);
-            atlasData = ctx.getImageData(0, 0, atlasSize, atlasSize);
-        } else {
-            const atlasCanvas = document.createElement('canvas');
-            atlasCanvas.width = atlasSize;
-            atlasCanvas.height = atlasSize;
-            const atlasCtx = atlasCanvas.getContext('2d')!;
-            atlasCtx.drawImage(atlasImage, 0, 0);
-            atlasData = atlasCtx.getImageData(0, 0, atlasSize, atlasSize);
+
+        const uvMap: Record<string, [number, number, number, number]> = {};
+        for (const [id, coords] of Object.entries(iconData)) {
+            const [x, y, w, h] = coords;
+            uvMap[`${namespace}:${id}`] = [
+                x / image.width,
+                y / image.height,
+                (x + w) / image.width,
+                (y + h) / image.height,
+            ];
         }
-        
-        const rawUvMap: Record<string, [number, number, number, number]> = {};
-        Object.keys(uvMap).forEach(id => {
-            const [u, v, du, dv] = uvMap[id];
-            const dv2 = (du !== dv && id.startsWith('block/')) ? du : dv;
-            const fullId = new Identifier(config.namespace, id).toString();
-            rawUvMap[fullId] = [u, v, u + du, v + dv2];
-        });
-        
-        const idMap: Record<string, [number, number, number, number]> = {};
-        Object.entries(rawUvMap).forEach(([id, [u0, v0, u1, v1]]) => {
-            idMap[id] = [u0 / atlasSize, v0 / atlasSize, u1 / atlasSize, v1 / atlasSize];
-        });
-        
-        const textureAtlas = new TextureAtlas(atlasData, idMap);
-        
-        const opaqueBlocks = new Set<string>(
-            opaqueData.opaque.map(id => `${config.namespace}:${id}`)
-        );
-        
-        let iconAtlasUrl: string | undefined;
-        let iconUvMap: Record<string, [number, number, number, number]> | undefined;
-        try {
-            const iconsPath = await join(modPath, 'icons');
-            const iconDataPath = await join(iconsPath, 'data.min.json');
-            const iconDataText = await readTextFile(iconDataPath);
-            const iconData = JSON.parse(iconDataText);
-            
-            const iconAtlasPath = await join(iconsPath, 'atlas.png');
-            const iconAtlasImgData = await readFile(iconAtlasPath);
-            const iconBlob = new Blob([new Uint8Array(iconAtlasImgData)], { type: 'image/png' });
-            iconAtlasUrl = URL.createObjectURL(iconBlob);
-            
-            const iconImage = await new Promise<HTMLImageElement>((resolve, reject) => {
-                const img = new Image();
-                img.onload = () => resolve(img);
-                img.onerror = reject;
-                img.src = iconAtlasUrl!;
-            });
-            
-            const iconWidth = iconImage.width;
-            const iconHeight = iconImage.height;
-            iconUvMap = {};
-            Object.entries(iconData).forEach(([id, coords]: [string, any]) => {
-                const [x, y, w, h] = coords;
-                iconUvMap![id] = [x / iconWidth, y / iconHeight, (x + w) / iconWidth, (y + h) / iconHeight];
-            });
-        } catch (iconErr) {
-            console.warn(`Failed to load icons for ${modName}, will skip:`, iconErr);
-        }
-        
-        return {
-            namespace: config.namespace,
-            blockDefinitions,
-            blockModels,
-            textureAtlas,
-            atlasImage: atlasData,
-            atlasSize,
-            rawUvMap,
-            opaqueBlocks,
-            iconAtlasUrl,
-            iconUvMap
-        };
-        
+        return {atlasUrl, uvMap};
     } catch (err) {
-        console.error(`Failed to load resource for ${modName}:`, err);
+        console.warn(`[resources] 读取 ${modName} 的图标失败，跳过该资源：`, err);
         return null;
     }
 }
 
-export async function loadResource() {
+/**
+ * 重新加载 `data/resource/` 下所有资源包的方块图标（幂等，可重复调用）。
+ * 下载或卸载资源后直接再调一次即可生效，不必重启应用。
+ * @returns 成功载入图标图集的资源包数量
+ */
+export async function loadBlockIcons(): Promise<number> {
+    // 先释放上一轮的 blob URL，再清空映射（否则重载会累积泄漏）
+    activeAtlasUrls.forEach((url) => URL.revokeObjectURL(url));
+    activeAtlasUrls = [];
+    for (const key of Object.keys(blockIconSpriteMap)) delete blockIconSpriteMap[key];
+
+    let dirs: { name: string; isDirectory: boolean }[] = [];
     try {
         const resourcePath = await resolveResource('data/resource/');
-        const resourceDirs = await readDir(resourcePath);
-
-        const modDirs = resourceDirs.filter(dir => dir.isDirectory);
-        const validResources: ResourceData[] = [];
-        for (let i = 0; i < modDirs.length; i++) {
-            const resource = await loadModResource(modDirs[i].name);
-            if (resource) {
-                validResources.push(resource);
-            }
-            if (i % 2 === 0) {
-                await yieldToMainThread();
-            }
-        }
-        
-        if (validResources.length === 0) {
-            console.error('No valid resources loaded');
-            return null;
-        }
-        
-        const mergedBlockDefinitions: Record<string, BlockDefinition> = {};
-        const mergedBlockModels: Record<string, BlockModel> = {};
-        const mergedOpaqueBlocks = new Set<string>();
-        Object.keys(blockIconSpriteMap).forEach((key) => {
-            delete blockIconSpriteMap[key]
-        })
-        
-        validResources.forEach(resource => {
-            Object.assign(mergedBlockDefinitions, resource.blockDefinitions);
-            Object.assign(mergedBlockModels, resource.blockModels);
-            resource.opaqueBlocks.forEach(id => mergedOpaqueBlocks.add(id));
-        });
-        
-        let totalArea = 0;
-        let maxSize = 0;
-        validResources.forEach(r => {
-            totalArea += r.atlasSize * r.atlasSize;
-            maxSize = Math.max(maxSize, r.atlasSize);
-        });
-        
-        let mergedAtlasSize = maxSize;
-        while (mergedAtlasSize * mergedAtlasSize < totalArea) {
-            mergedAtlasSize *= 2;
-        }
-        mergedAtlasSize = Math.min(16384, mergedAtlasSize);
-
-        let mergedCtx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
-        if (typeof OffscreenCanvas !== 'undefined') {
-            const mergedCanvas = new OffscreenCanvas(mergedAtlasSize, mergedAtlasSize);
-            mergedCtx = mergedCanvas.getContext('2d')!;
-        } else {
-            const mergedCanvas = document.createElement('canvas');
-            mergedCanvas.width = mergedAtlasSize;
-            mergedCanvas.height = mergedAtlasSize;
-            mergedCtx = mergedCanvas.getContext('2d')!;
-        }
-        
-        const atlasPositions = new Map<string, { x: number, y: number, size: number }>();
-        let currentX = 0;
-        let currentY = 0;
-        let rowHeight = 0;
-        
-        for (let i = 0; i < validResources.length; i++) {
-            const resource = validResources[i];
-            const atlasData = resource.atlasImage;
-            const atlasSize = resource.atlasSize;
-            if (currentX + atlasSize > mergedAtlasSize) {
-                currentX = 0;
-                currentY += rowHeight;
-                rowHeight = 0;
-            }
-            if (currentY + atlasSize > mergedAtlasSize) {
-                console.error(`Cannot fit ${resource.namespace} atlas! Position (${currentX}, ${currentY}) + size ${atlasSize} exceeds ${mergedAtlasSize}`);
-                continue;
-            }
-            mergedCtx.putImageData(atlasData, currentX, currentY);
-            atlasPositions.set(resource.namespace, { x: currentX, y: currentY, size: atlasSize });
-            currentX += atlasSize;
-            rowHeight = Math.max(rowHeight, atlasSize);
-            if (i % 2 === 0) {
-                await yieldToMainThread();
-            }
-        }
-        
-        const mergedAtlasData = mergedCtx.getImageData(0, 0, mergedAtlasSize, mergedAtlasSize);
-        
-        const mergedUvMap: Record<string, [number, number, number, number]> = {};
-        for (let i = 0; i < validResources.length; i++) {
-            const resource = validResources[i];
-            const pos = atlasPositions.get(resource.namespace)!;
-            const entries = Object.entries(resource.rawUvMap);
-            for (const [id, [u0, v0, u1, v1]] of entries) {
-                mergedUvMap[id] = [
-                    (pos.x + u0) / mergedAtlasSize,
-                    (pos.y + v0) / mergedAtlasSize,
-                    (pos.x + u1) / mergedAtlasSize,
-                    (pos.y + v1) / mergedAtlasSize
-                ];
-            }
-            
-            if (resource.iconAtlasUrl && resource.iconUvMap) {
-                Object.entries(resource.iconUvMap).forEach(([id, uv]) => {
-                    blockIconSpriteMap[id] = {
-                        atlasUrl: resource.iconAtlasUrl!,
-                        uv
-                    };
-                });
-            }
-            
-            if (i % 2 === 0) {
-                await yieldToMainThread();
-            }
-        }
-        
-        const mergedTextureAtlas = new TextureAtlas(mergedAtlasData, mergedUvMap);
-        const models = Object.values(mergedBlockModels) as any[]
-        for (let i = 0; i < models.length; i++) {
-            const model = models[i]
-            model.flatten({ 
-                getBlockModel: (id: Identifier) => mergedBlockModels[id.toString()] || null 
-            });
-            if (i % 150 === 0) {
-                await yieldToMainThread();
-            }
-        }
-        blockResources.value = {
-            getBlockDefinition(id: Identifier) {
-                return mergedBlockDefinitions[id.toString()] || null;
-            },
-            getBlockModel(id: Identifier) {
-                return mergedBlockModels[id.toString()] || null;
-            },
-            getTextureUV(id: Identifier) {
-                return mergedTextureAtlas.getTextureUV(id);
-            },
-            getTextureAtlas() {
-                return mergedTextureAtlas.getTextureAtlas();
-            },
-            getBlockFlags(id: Identifier) {
-                return {
-                    opaque: mergedOpaqueBlocks.has(id.toString())
-                };
-            },
-            getBlockProperties() {
-                return null;
-            },
-            getDefaultBlockProperties() {
-                return {};
-            },
-            getItemModel() {
-                return null
-            },
-            getItemComponents() {
-                return null
-            },
-
-        };
-        
-        console.log(`Loaded ${validResources.length} mod resources:`, 
-            validResources.map(r => r.namespace).join(', '));
-
+        dirs = (await readDir(resourcePath)).filter((d) => d.isDirectory) as
+            { name: string; isDirectory: boolean }[];
     } catch (err) {
-        console.error('Failed to load resources:', err);
+        console.error('[resources] 无法读取资源目录 data/resource/：', err);
+        return 0;
     }
+
+    let loaded = 0;
+    for (const dir of dirs) {
+        const icons = await loadPackIcons(dir.name);
+        if (!icons) continue;
+        activeAtlasUrls.push(icons.atlasUrl);
+        for (const [id, uv] of Object.entries(icons.uvMap)) {
+            blockIconSpriteMap[id] = {atlasUrl: icons.atlasUrl, uv};
+        }
+        loaded++;
+    }
+    console.log(
+        `[resources] 已加载 ${loaded}/${dirs.length} 个资源包的方块图标（共 ${Object.keys(blockIconSpriteMap).length} 个方块）`,
+    );
+    return loaded;
 }

@@ -1,2 +1,2 @@
-export { blockIconSpriteMap } from './loadResource';
-export { blockResources, loadBlockResources } from './ResourceStore';
+export { blockIconSpriteMap, loadBlockIcons } from './loadResource';
+export { loadBlockResources, blockIconGeneration } from './ResourceStore';
