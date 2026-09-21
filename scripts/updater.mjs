@@ -10,11 +10,28 @@ const octokit = getOctokit(process.env.GITHUB_TOKEN);
 
 const updateRelease = async () => {
     
-    const { data: release } = await octokit.rest.repos.getReleaseByTag({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        tag: "updater",
-    });
+    // tag=updater 的 release 是 app 内更新清单 latest.json 的固定投递点（端点硬编码在 tauri.conf.json），
+    // 仓库里可能被删掉 —— 不存在就建，否则这一步永远 404 失败、且客户端检查更新也 404。
+    let release;
+    try {
+        ({ data: release } = await octokit.rest.repos.getReleaseByTag({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag: "updater",
+        }));
+    } catch (error) {
+        if (error.status !== 404) throw error;
+        ({ data: release } = await octokit.rest.repos.createRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            tag_name: "updater",
+            name: "updater",
+            body: "自动更新清单（latest.json 由发布流程覆盖写入）",
+            draft: false,
+            prerelease: false,
+        }));
+        console.log("已创建 tag=updater 的 release: id=" + release.id);
+    }
 
     
     const deletePromises = release.assets
