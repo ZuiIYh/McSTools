@@ -29,6 +29,28 @@ export const ATLAS_REGISTRY = path.join(MCMETA_DIR, '.mod-atlas.json');
 export const RENDER_HINTS = path.join(MCMETA_DIR, 'mod-render-hints.json');
 export const IMPORT_DIR = path.join(ROOT, 'src-tauri', 'data', 'editor', 'import', 'mods');
 
+// ---------------- 模型键名规则（唯一真源） ----------------
+// 模组模型移植进编辑器 block-models.json 后的键名。mod-models 的 modelKeyFor 就是它，
+// 加载器/模型层解析**跨模组 parent** 时也用它反查，所以必须只有一处实现。
+export const sanitizeModelKey = (s) => {
+  const t = String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  if (t.length <= 54) return t;
+  // ★ 直接截断会**撞键**：..._block_powered_vertical 与 ..._block_powered_vertical_locked
+  //   都会被截成 ..._block_powered_vert → 两个模型写进同一个键，变体渲染成同一份几何。
+  //   保留可读前缀 + 4~5 位内容哈希，保证一一对应。
+  let h = 0x811c9dc5;
+  for (let i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
+  return `${t.slice(0, 54)}_${h.toString(36).slice(0, 5)}`;
+};
+export const modelKeyFor = (modid, modelId) =>
+  `block/mt_${sanitizeModelKey(modid)}_${sanitizeModelKey(String(modelId).replace(/^minecraft:/, ''))}`;
+/** 别的模组的 parent 引用 → 它移植后的模型键；原版（minecraft:）返回 null（编辑器本来就有） */
+export const crossModParentKey = (ref) => {
+  const s = String(ref || '');
+  const ns = s.includes(':') ? s.slice(0, s.indexOf(':')) : 'minecraft';
+  return ns && ns !== 'minecraft' ? modelKeyFor(ns, s) : null;
+};
+
 export function loadDb() { return JSON.parse(fs.readFileSync(DB_PATH, 'utf8')); }
 export function saveDb(db) { fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf8'); }
 export function loadFace() { return JSON.parse(fs.readFileSync(FACE_PATH, 'utf8')); }

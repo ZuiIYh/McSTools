@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { applyRenderForMod, formatRenderLine } from './mod-apply-render.mjs';
 import { encodePng } from './png.mjs';
 import { extractZipSelective, MOD_ASSET_RE } from './zip.mjs';
+import { crossModParentKey } from './mod-shared.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -120,7 +121,10 @@ function flattenModModel(extractedDir, modelId, seen = new Set()) {
   if (fs.existsSync(modPath)) { try { m = JSON.parse(fs.readFileSync(modPath, 'utf8')); } catch { m = null; } }
   if (!m) {
     const em = editorModels();
-    m = em[`${ns}:${mp}`] || em[mp] || null;
+    // 跨模组 parent：create_connected 大量继承 create 的模型（clutch/gearshift 的几何全在父层），
+    // 只按原键名查必然落空 → 方块被判成「无几何」。
+    const xmod = crossModParentKey(`${ns}:${mp}`);
+    m = em[`${ns}:${mp}`] || em[mp] || (xmod ? em[xmod] : null) || null;
   }
   if (!m) return null;
   let base = { textures: {}, elements: null };
@@ -131,12 +135,54 @@ function flattenModModel(extractedDir, modelId, seen = new Set()) {
   return { textures: { ...base.textures, ...(m.textures || {}) }, elements: m.elements || base.elements };
 }
 
-/** 贴图 ID → 磁盘 PNG。先找模组 jar，再退回编辑器已落盘的原版贴图（block-textures/） */
+/**
+ * 其它**已导入模组**资产缓存里的贴图索引：`<ns>:<相对路径>` → 绝对路径（懒构建，只扫一次）。
+ *
+ * 为什么需要它：模组之间会跨命名空间复用贴图。create_connected 有 15 个方块的模型 100% 引用
+ * `create:block/*`（gearbox / axis / cogwheel / vault / redstone_bridge…）—— 只在自己 jar 里找必然
+ * 全部落空，于是这些**明明有几何**的方块被判成「无贴图的隐形技术方块」→ 定义指向 block/air
+ * → 编辑器里整块不显示（用户看到的「有些贴图加载不出来」）。create 已导入，它的缓存里就有这些
+ * PNG，而且多数已经在图集里，可以直接复用。
+ */
+let _texIndex = null;
+function otherModTexIndex() {
+  if (_texIndex) return _texIndex;
+  _texIndex = new Map();
+  try {
+    if (!fs.existsSync(IMPORT_DIR)) return _texIndex;
+    for (const d of fs.readdirSync(IMPORT_DIR)) {
+      const base = path.join(IMPORT_DIR, d, 'assets');
+      if (!fs.existsSync(base)) continue;
+      for (const ns of fs.readdirSync(base)) {
+        const tdir = path.join(base, ns, 'textures');
+        if (!fs.existsSync(tdir)) continue;
+        const walk = (dir, rel) => {
+          let es; try { es = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+          for (const e of es) {
+            const p = path.join(dir, e.name);
+            if (e.isDirectory()) walk(p, `${rel}${e.name}/`);
+            else if (e.name.endsWith('.png')) {
+              const k = `${ns}:${rel}${e.name.slice(0, -4)}`;
+              if (!_texIndex.has(k)) _texIndex.set(k, p);
+            }
+          }
+        };
+        walk(tdir, '');
+      }
+    }
+  } catch { /* 索引失败就当没有，退回原行为 */ }
+  return _texIndex;
+}
+
+/** 贴图 ID → 磁盘 PNG：① 本模组 jar ② 其它已导入模组的缓存（跨模组依赖）③ 编辑器已落盘的原版贴图 */
 function texFileFor(extractedDir, texId) {
   if (typeof texId !== 'string' || !texId || texId.startsWith('#')) return null;
   const [ns, tp] = texId.includes(':') ? texId.split(':') : ['minecraft', texId];
   const modFile = path.join(extractedDir, 'assets', ns, 'textures', tp + '.png');
   if (fs.existsSync(modFile)) return { texId: `${ns}:${tp}`, pngSource: modFile };
+  // 跨模组：按「命名空间 + 完整相对路径」精确命中，比下面按 basename 猜的原版兜底可靠
+  const other = otherModTexIndex().get(`${ns}:${tp}`);
+  if (other) return { texId: `${ns}:${tp}`, pngSource: other, crossMod: true };
   // 原版贴图：编辑器把贴图平铺在 block-textures/<basename>.png
   const van = path.join(BLOCK_TEXTURES_DIR, path.posix.basename(tp) + '.png');
   if (fs.existsSync(van)) return { texId: `${ns}:${tp}`, pngSource: van };
@@ -171,6 +217,7 @@ export function parseMod(extractedDir) {
   const blocks = [];
   const missing = [];
   const airBlocks = [];
+  const noTextureBlocks = [];   // 有几何但一张贴图都没解析到（会由 substitute 兜底，值得盯）
   const seenBlockIds = new Set();
   for (const ns of namespaces) {
     const bsDir = path.join(assetsDir, ns, 'blockstates');
@@ -193,11 +240,17 @@ export function parseMod(extractedDir) {
       const hit = pickBlockTexture(extractedDir, modelIds, ns);
       const english = langName(langEn, name) || titleCase(name);
       const chinese = langName(langZh, name);
-      if (!hit) {
-        // 没有任何可解析贴图 —— 实测全部是**隐形技术方块**（模型链最终落到 minecraft:block/air，
-        // 如 copycat_panel / crushing_wheel_controller / fake_track / water_wheel_structure）。
-        // 仍要注册：不注册的话渲染器会给它一个洋红兜底立方体，蓝图里非常显眼。
-        // 注册为 invisible，由 mod-models.mjs 把定义指向 block/air（空网格 = 真隐形）。
+      // ★ 隐形技术方块只能靠**几何**判定：模型链展平后一个 element 都没有才算真隐形
+      //   （block/air、block/barrier、只有 particle 贴图的占位模型 —— 如 copycat_*、
+      //     wrapped_copycat_*、fan_*_catalyst、crushing_wheel_controller）。
+      //   以前拿「有没有本模组自己的贴图」当判据 → 跨模组复用贴图的方块全被判成隐形，
+      //   编辑器里什么都不显示（create_connected 有 15 个这样的方块）。
+      //   真隐形仍要注册：不注册渲染器会给它一个洋红兜底立方体，蓝图里非常显眼。
+      const hasGeometry = modelIds.some((mid) => {
+        const fm = flattenModModel(extractedDir, mid);
+        return !!(fm && Array.isArray(fm.elements) && fm.elements.length > 0);
+      });
+      if (!hasGeometry) {
         blocks.push({ blockId, modid: ns, name, texId: null, pngSource: null,
                       pngTarget: AIR_ICON, english, chinese, invisible: true,
                       srcModels: modelIds });
@@ -205,15 +258,18 @@ export function parseMod(extractedDir) {
         airBlocks.push(blockId);
         continue;
       }
-      const pngBase = path.basename(hit.texId.split('/').pop());
-      const pngTarget = `${ns}__${pngBase}.png`;
-      blocks.push({ blockId, modid: ns, name, texId: hit.texId,
-                    pngSource: hit.pngSource, pngTarget, english, chinese });
+      // 有几何 → 一定是可见方块。贴图可能来自别的模组（crossMod）；万一一张都找不到，
+      // 几何照样移植，缺的贴图由 mod-models 的 substitute() 用图集内近似的补上（不会洋红）。
+      if (!hit) noTextureBlocks.push(`${blockId}（几何 ${modelIds.length} 个模型，但一张贴图都没解析到）`);
+      const pngBase = hit ? path.basename(hit.texId.split('/').pop()) : null;
+      const pngTarget = hit ? `${ns}__${pngBase}.png` : AIR_ICON;
+      blocks.push({ blockId, modid: ns, name, texId: hit ? hit.texId : null,
+                    pngSource: hit ? hit.pngSource : null, pngTarget, english, chinese });
       seenBlockIds.add(blockId);
     }
   }
   const modid = namespaces.find(n => n !== 'minecraft') || namespaces[0] || null;
-  return { ok: true, namespaces, modid, blocks, missing, airBlocks };
+  return { ok: true, namespaces, modid, blocks, missing, airBlocks, noTextureBlocks };
 }
 
 /**
@@ -382,6 +438,7 @@ try {
     missingCount: result.missing.length,
     airBlockCount: result.airBlocks.length,
     airBlocks: result.airBlocks,
+    noTextureBlocks: result.noTextureBlocks || [],
     blocks: result.blocks.map(b => ({ id: b.blockId, name: b.english })),
     missing: result.missing
   };

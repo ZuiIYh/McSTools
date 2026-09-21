@@ -14,8 +14,9 @@
 //   拷 PNG 是不够的，必须同时扩展图集与模型/定义表。
 //
 // 三条硬约束：
-//   1) 容量：只能用图集内容下方的空白条带（y >= 内容底部，通常 1992，到画布高 2048 为止）。
-//      再高会让画布 pow2 高度从 2048 变 4096，把全部原版 UV 算错 —— 严格封顶。
+//   1) 容量：可用条带 = 原版内容底部（通常 1992）到高度上限（默认 4096）。
+//      加载器按 pow2(实际图片高) 现算 UV（chunk 7578），所以增高是安全的：原版像素不动、UV 一致重算。
+//      详见 mod-models.mjs 中 MAX_ATLAS_HEIGHT 的注释，以及 .tmp/atlas-loader-sim.mjs 的逐像素断言。
 //   2) 绝不覆盖原版条目：贴图 ID 与原版 atlas-uv 键冲突时改用私有别名 `modtex:*`，
 //      模型里指向别名。写盘前还有一道「原版条目零改动」断言兜底。
 //   3) 幂等：重复注入先撤销自己的旧占用；登记表 mcmeta/.mod-atlas.json 供禁用/卸载精确回滚。
@@ -31,7 +32,9 @@ import {
 } from './mod-shared.mjs';
 
 export const TILE = 16;
-export const MAX_ATLAS_HEIGHT = 2048;   // 画布 pow2 高度上限：超过就会破坏全部原版 UV
+// 内容带高度上限。UV = 像素 / pow2(实际图片高)，增高只会让 H 2048→4096 并整体重算 UV，
+// 原版不受影响（.tmp/atlas-loader-sim.mjs 逐像素验证）。容量 1992..4096 = 16768 格。
+export const MAX_ATLAS_HEIGHT = Number(process.env.MOD_ATLAS_MAX_HEIGHT) || 4096;
 const BACKUP_DIR = path.join(MCMETA_DIR, '.mod-backup');
 const BACKUP_FILES = ['atlas.png', 'atlas-uv.json', 'block-models.json', 'block-definitions.json', 'block-default-properties.json'];
 
@@ -66,7 +69,7 @@ const modelNameFor = (atlasId) => `block/mt_${sanitize(atlasId)}`;
 
 function loadAtlasCanvas() {
   const dec = decodePng(fs.readFileSync(ATLAS_PNG));
-  if (dec.h > MAX_ATLAS_HEIGHT) throw new Error(`atlas.png 高度 ${dec.h} 已超过 ${MAX_ATLAS_HEIGHT}，无法安全扩展`);
+  if (dec.h > MAX_ATLAS_HEIGHT) throw new Error(`atlas.png 高度 ${dec.h} 已超过上限 ${MAX_ATLAS_HEIGHT}（可用 MOD_ATLAS_MAX_HEIGHT 覆盖）`);
   const canvas = Buffer.alloc(dec.w * MAX_ATLAS_HEIGHT * 4);
   dec.rgba.copy(canvas, 0, 0, dec.w * dec.h * 4);
   return { w: dec.w, contentH: dec.h, canvas };
@@ -192,7 +195,7 @@ export function applyModAtlas(modid, blocks, opts = {}) {
   if (freeSlots.length < needTiles) {
     throw new Error(
       `图集空余不足：需要 ${needTiles} 格，可用 ${freeSlots.length} 格（共 ${total} 格）。` +
-      `图集已封顶 ${MAX_ATLAS_HEIGHT}px（再扩容会让画布 pow2 高度翻倍并破坏全部原版 UV）。请先卸载其它模组。`);
+      `图集已封顶 ${MAX_ATLAS_HEIGHT}px（可用 MOD_ATLAS_MAX_HEIGHT 提高上限，代价是运行时图集显存翻倍）。请先卸载其它模组。`);
   }
 
   if (dryRun) {

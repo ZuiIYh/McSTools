@@ -9,8 +9,9 @@
 //   并且自带 stairs/slab/cube_column/template_wall_* 等原版父模型，可以照搬。
 //
 // 三条硬约束（勿踩）：
-//   1) 图集容量：atlas.png 会被加载器向上取整到 pow2 再按此归一化 UV，所以**不能改图集尺寸**，
-//      可用空间只有内容底部 (baseBottom) 以下的空白条带（实测 384 格）。超了就优雅降级。
+//   1) 图集容量：atlas.png 的高度**可以安全增长**（加载器按 pow2(实际图片高) 现算 UV，见下方长注释），
+//      可用空间 = 原版内容底部 (baseBottom，实测 1992) 到高度上限之间的条带，默认 16768 格。
+//      仍放不下的贴图由 substitute() 换成同类近似贴图（几何绝不受影响）。
 //   2) 模型缺失会抛异常：渲染器 `throw Error("Cannot find block model ...")`，
 //      因此 defs 里引用的每个模型都必须真的写进 block-models.json。
 //   3) 变体匹配：`matchesVariant` 对空键 "" 恒为真，但取的是**第一个**匹配项
@@ -25,10 +26,27 @@ import { decodePng, encodePng, resizeNearest } from './png.mjs';
 import { bakeObjGeometry } from './mod-obj.mjs';
 import {
   MCMETA_DIR, ATLAS_PNG, ATLAS_UV, BLOCK_MODELS, BLOCK_DEFS, BLOCK_PROPS, ATLAS_REGISTRY, IMPORT_DIR,
+  modelKeyFor, crossModParentKey,
 } from './mod-shared.mjs';
 
 export const TILE = 16;
-const MAX_ATLAS_HEIGHT = 2048;
+// 模组贴图内容带（baseBottom 以下）的高度上限。
+//
+// ★ 旧注释写「超过 2048 会让画布 pow2 高度翻倍，把全部原版 UV 算错」——**那个判断是错的**，
+//   按渲染器源码（chunk 7578）纠正如下：
+//     A = pow2(bitmap.width); H = pow2(bitmap.height);
+//     canvas(A, H); ctx.drawImage(bitmap, 0, 0);            // 左上角对齐，不重采样
+//     uv = [x/A, y/H, (x+w)/A, (y+h)/H]                     // 加载时按 pow2(实际尺寸) 现算
+//   UV 是「像素 ÷ pow2(实际图片尺寸)」，不是烘焙好的定值。所以图片增高只会让 H 从 2048 变 4096，
+//   所有 UV 被**一致地重算**；原版像素原地不动（左上角锚定）→ 原版方块完全不受影响。
+//   TextureAtlas（chunk 9703）也只要求两轴是 2 的幂，且 part = 16/width 只与宽度有关。
+//   已用 .tmp/atlas-loader-sim.mjs 对 2622 条原版条目做逐像素断言验证（增高前后均 ALL PASS）。
+//
+// 代价：一旦内容超过 2048px，运行时画布由 2048x2048 变 2048x4096（ImageData ≈16MB → 33MB）。
+//   图集 PNG 仍按实际占用「懒增长」，没写满 2048 时不会多出一行像素、也没有额外开销。
+// 容量：1992..4096 = 131 行 x 128 列 = 16768 格（旧上限只有 384 格）。
+// 需要更多时用环境变量 MOD_ATLAS_MAX_HEIGHT=8192（显存再翻倍，谨慎）。
+const MAX_ATLAS_HEIGHT = Number(process.env.MOD_ATLAS_MAX_HEIGHT) || 4096;
 const BACKUP_DIR = path.join(MCMETA_DIR, '.mod-backup');
 const BACKUP_FILES = ['atlas.png', 'atlas-uv.json', 'block-models.json', 'block-definitions.json', 'block-default-properties.json'];
 
@@ -132,7 +150,10 @@ export function flattenModel(key, modModels, editorModels, assets) {
   let cur = key, guard = 0;
   while (cur && guard++ < 40) {
     const k = norm(cur);
-    const m = modModels.has(k) ? modModels.get(k) : (editorModels[k] || editorModels[String(cur)]);
+    // 本模组 → 编辑器原版/已移植条目 → **跨模组 parent**（如 create_connected 继承 create:block/clutch/block）
+    const xmod = crossModParentKey(k);
+    const m = modModels.has(k) ? modModels.get(k)
+      : (editorModels[k] || editorModels[String(cur)] || (xmod ? editorModels[xmod] : null));
     if (!m) break;
     chain.push({ key: k, m });
     cur = m.parent ? String(m.parent) : null;
@@ -360,13 +381,64 @@ function isCubeAll(f) {
   return ts.size === 1 && !ts.has(undefined);
 }
 
-export const modelKeyFor = (modid, modelId) => `block/mt_${sanitize(modid)}_${sanitize(norm(modelId))}`;
+export { modelKeyFor };   // 实现统一在 mod-shared.mjs（加载器解析跨模组 parent 用的是同一套）
 
 // ---------------- 几何构建 ----------------
 /**
  * @returns {{ defs:Object, models:Object, texNeed:Map<string,{src:string,blocks:number}>,
  *             blockTex:Map<string,Set<string>>, ported:Set<string>, cube:Set<string>, missing:Array }}
  */
+/**
+ * Flywheel 动态渲染方块的静态几何补映射（在**收集 refs 之前**改写 blockstate 里的模型引用）。
+ *
+ * 背景：create 的传送带 / 链式传动等由 Flywheel 在运行时绘制，静态资源包里对应变体只给一个
+ * **空占位模型**（`create:block/belt/particle`，elements 为空）→ 我们只能合成一片 2px 薄板，
+ * 于是蓝图里传送带的路径、连接、坡度全是错的（实测 163 条传送带里 127 条）。
+ * 但包里**确实带着**按属性命名的真实静态模型，只是 blockstate 从不引用：
+ *   part=start/middle/end/pulley  →  belt/start · belt/middle · belt/end · belt_pulley
+ *   slope=horizontal              →  {dir}/{part}          （平带）
+ *   slope=upward/downward/sideways→  {dir}/diagonal_{part}  （斜带/侧带，近似）
+ * 这套命名与 casing 分支完全同构（belt_casing/{horizontal,diagonal,sideways}_{part}）。
+ * 目标模型不存在就保持原样（其它模组以 /particle 结尾的占位不受影响）。
+ */
+function remapFlywheelStatic(bs, models) {
+  if (!bs || !models) return 0;
+  const fix = (entry, props) => {
+    const arr = Array.isArray(entry) ? entry : [entry];
+    let n = 0;
+    for (const e of arr) {
+      if (!e || typeof e.model !== 'string') continue;
+      const m = e.model;
+      if (!m.endsWith('/particle')) continue;
+      const dir = m.slice(0, m.lastIndexOf('/'));            // create:block/belt
+      const colon = dir.indexOf(':');
+      const ns = colon >= 0 ? dir.slice(0, colon) : 'minecraft';
+      const base = colon >= 0 ? dir.slice(colon + 1) : dir;  // block/belt
+      const part = props && props.part;
+      const slope = props && props.slope;
+      if (!part) continue;
+      const cand = [];
+      if (part === 'pulley') cand.push(`${ns}:${base}_pulley`);
+      else if (slope === 'horizontal') cand.push(`${ns}:${base}/${part}`);
+      else cand.push(`${ns}:${base}/diagonal_${part}`);
+      for (const c of cand) if (models.has(c)) { e.model = c; n++; break; }
+    }
+    return n;
+  };
+  const propsOf = (key) => {
+    const o = {};
+    for (const kv of String(key).split(',')) {
+      const i = kv.indexOf('=');
+      if (i > 0) o[kv.slice(0, i)] = kv.slice(i + 1);
+    }
+    return o;
+  };
+  let n = 0;
+  if (bs.variants) for (const [k, v] of Object.entries(bs.variants)) n += fix(v, propsOf(k));
+  if (bs.multipart) for (const p of bs.multipart) n += fix(p.apply, p.when || {});
+  return n;
+}
+
 export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex = new Map(), airBlocks = new Set()) {
   const { blockstates, models: modModels, textureIndex } = assets;
   const outModels = {};
@@ -419,6 +491,8 @@ export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex
     const name = blockId.slice(nsPrefix.length);
     const bs = blockstates.get(name);
     if (!bs) { fail(blockId); continue; }
+    // Flywheel 动态渲染方块：把空占位 */particle 换成包里真实的静态模型（见 remapFlywheelStatic）
+    remapFlywheelStatic(bs, assets.models);
 
     // 收集本方块所有变体引用的模型
     const refs = [];
@@ -465,17 +539,22 @@ export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex
       return f;
     };
 
-    const first = readModel(refs[0]);
+    // 先把每个 ref 展平一次并缓存（readModel 要解析 JSON，别重复调用）
+    const flat = new Map();
+    for (const ref of refs) if (!flat.has(ref)) flat.set(ref, readModel(ref));
+    // ★ 某个模型解析不了（典型：引用了**没装的模组**的模型 —— linked_throttle_lever 的
+    //   `simulated:block/throttle_lever/block`）只该丢掉这一支，**不该让整个方块退化成整块立方体**：
+    //   下面写 defs 时会按 keyOf 过滤，绝不会引用没落地的模型，所以丢弃是安全的。
+    const first = refs.map((r) => flat.get(r)).find(Boolean);
     if (!first) { fail(blockId); continue; }
     if (first.objBaked) objBaked.add(blockId);
 
     // 逐个模型展平并写出（渲染器找不到模型会抛异常，必须全部落地）
     const keyOf = new Map();
-    let ok = true;
     for (const ref of refs) {
       if (keyOf.has(ref)) continue;
-      const f = readModel(ref);
-      if (!f) { ok = false; continue; }
+      const f = flat.get(ref);
+      if (!f) continue;                    // 解析不了 → 丢掉这一支（见上）
       const mk = modelKeyFor(modid, ref);
       keyOf.set(ref, mk);
       outModels[mk] = { elements: f.elements };
@@ -499,8 +578,6 @@ export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex
         }
       }
     }
-    if (!ok) { fail(blockId); continue; }
-
     if (isCubeAll(first)) {
       cube.add(blockId);
       // 仍写成真实模型（等价但保持一份），只为贴图占格
@@ -544,7 +621,7 @@ export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex
 // ---------------- 图集写入 ----------------
 function loadAtlasCanvas() {
   const dec = decodePng(fs.readFileSync(ATLAS_PNG));
-  if (dec.h > MAX_ATLAS_HEIGHT) throw new Error(`图集高度 ${dec.h} 超过 ${MAX_ATLAS_HEIGHT}`);
+  if (dec.h > MAX_ATLAS_HEIGHT) throw new Error(`图集高度 ${dec.h} 超过上限 ${MAX_ATLAS_HEIGHT}（可用 MOD_ATLAS_MAX_HEIGHT 覆盖）`);
   const canvas = Buffer.alloc(dec.w * MAX_ATLAS_HEIGHT * 4);
   dec.rgba.copy(canvas, 0, 0, dec.w * dec.h * 4);
   return { w: dec.w, contentH: dec.h, canvas };
@@ -651,7 +728,8 @@ export function applyModModels(modid, blockIds, opts = {}) {
     if (best) reserved.add(best);
   }
   // 源贴图的透明类别：opaque=无透明像素 / cut=有全透明像素 / blend=有半透明像素。
-  // ★ 图集只有 384 格而需求 663 张，必然有溢出，溢出者会被 substitute() 换成「别的贴图」。
+  // ★ 格子有限，装不下的会被 substitute() 换成「别的贴图」。
+  //   （旧上限 384 格 vs 需求 663 张 → 必然溢出；提上限后 create 可全量入图，此分支只在超上限时命中。）
   //   而「透明贴图被换成不透明贴图」是灾难性的：create:fluid_tank 的玻璃面用
   //   create:block/fluid_tank_window，它与 create:block/fluid_tank 的文件名公共前缀长达 10，
   //   于是被判为「强相似」而换成不透明金属贴图 → 玻璃整个消失、透明标记也永远打不上
@@ -701,7 +779,7 @@ export function applyModModels(modid, blockIds, opts = {}) {
   });
   const allocated = new Set(order.slice(0, capacity));
   const overflow = order.length - allocated.size;
-  // 透明贴图的保真情况（诊断：384 格能否装下全部「含透明像素」的贴图）
+  // 透明贴图的保真情况（诊断：可用格子能否装下全部「含透明像素」的贴图）
   const alphaTexNeed = order.filter((t) => srcAlpha(t) !== 'opaque').length;
   const alphaTexInAtlas = order.slice(0, capacity).filter((t) => srcAlpha(t) !== 'opaque').length;
 
@@ -831,7 +909,7 @@ export function applyModModels(modid, blockIds, opts = {}) {
     }
     // ★ 几何与变体不受图集预算限制。模型移植成功就写真实定义；
     //   放不下的贴图由下面的 substitute() 换成同目录/同命名空间的替代贴图。
-    //   以前这里是 canPort(整块否决)——只要有一张贴图没挤进 384 格，就把该方块的
+    //   以前这里是 canPort(整块否决)——只要有一张贴图没挤进图集，就把该方块的
     //   全部变体丢掉换成一个 cube_all，于是隧道/红石链接/阈值开关这类方块在蓝图里
     //   "不连接"（几何与朝向全没了）。贴图预算绝不能毁掉几何。
     if (geo.defs[blockId]) {
@@ -953,15 +1031,24 @@ export function applyModModels(modid, blockIds, opts = {}) {
     return out;
   };
 
+  // ★ 只有「面真正会用到的贴图」才需要替代 —— 即 texNeed 里的（它正是按面收集的）。
+  //   模型 textures 里没人引用的槽位（particle、备用变体槽 0/1_2/…）即使不在图集里也完全无害：
+  //   渲染器只按 elements 的面去取贴图。以前对这些槽位也做替代，于是 create 明明 0 溢出、
+  //   面引用 100% 命中，报告里却写着「替代贴图 42」（其中 33 次是 particle 槽），把真正
+  //   需要关注的替代淹没了。改按 texNeed 判定，这个数字才有意义。
+  const needSet = new Set(geo.texNeed.keys());
+  const needNormSet = new Set([...needSet].map(norm));
+  const isNeeded = (v) => needSet.has(v) || needNormSet.has(norm(v));
   let substituted = 0, subStrong = 0, subWeak = 0;
+  const subSeen = new Map();   // 源贴图 id → 被替代的模型槽位次数（诊断：谁没进图集）
   const modelNames = [];
   for (const [mk, mv] of Object.entries(geo.models)) {
     if (!usedModelKeys.has(mk)) continue;
     if (mv.textures) {
       const nt = {};
       for (const [slot, val] of Object.entries(mv.textures)) {
-        const s = substitute(val);
-        if (s !== val) { substituted++; if (subKind.get(val) === 'strong') subStrong++; else subWeak++; }
+        const s = isNeeded(val) ? substitute(val) : val;   // 没人引用的槽位保持原样，不计入替代
+        if (s !== val) { substituted++; subSeen.set(val, (subSeen.get(val) || 0) + 1); if (subKind.get(val) === 'strong') subStrong++; else subWeak++; }
         nt[slot] = s;
       }
       models[mk] = { ...mv, textures: nt };
@@ -1028,6 +1115,7 @@ export function applyModModels(modid, blockIds, opts = {}) {
     texturesSubstituted: substituted,
     substituteStrong: subStrong, substituteWeak: subWeak,
     substituteKeepAlpha: subAlpha.ok, substituteCrossAlpha: subAlpha.crossed,
+    substituteIds: [...subSeen.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20).map(([k, n]) => `${k} x${n}`),
     alphaTexNeed, alphaTexInAtlas,
     noSource: noSrc.length, atlasSize: `${atlas.w}x${newHeight}`, backedUp,
   };
