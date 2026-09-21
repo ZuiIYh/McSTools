@@ -113,7 +113,9 @@ pub fn run() {
             editor::mods::list_mod_packs,
             editor::mods::enable_mod_pack,
             editor::mods::disable_mod_pack,
-            editor::mods::uninstall_mod_pack
+            editor::mods::uninstall_mod_pack,
+            editor::mods::refresh_mod_pack,
+            editor::mods::refresh_all_mod_packs
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

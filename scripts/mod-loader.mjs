@@ -3,8 +3,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { applyModAtlas } from './mod-atlas.mjs';
-import { applyModModels } from './mod-models.mjs';
+import { applyRenderForMod, formatRenderLine } from './mod-apply-render.mjs';
 import { encodePng } from './png.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -314,18 +313,18 @@ function applyMod(result, args, extractedDir = null) {
     catch (e) { console.warn('缓存模组资源失败（不影响方块库，但异形几何将不可用）:', e.message); }
   }
 
-  // 关键：把贴图 + 真实几何注入 3D 图集资源包，否则方块会渲染成洋红立方体
-  let atlas = null;
-  try {
-    atlas = applyModModels(modid, allBlocks);
-  } catch (e) {
-    // 资源没缓存成功时退回到「整块贴图 + cube_all」，至少不会是洋红
-    const modelError = String((e && e.stack) || e);
-    console.error('模型移植失败，退化为整块贴图 + cube_all:', modelError);
-    try { atlas = { ...applyModAtlas(modid, blockTextures), modelError }; }
-    catch (e2) { atlas = { ok: false, error: modelError, fallbackError: String((e2 && e2.message) || e2) }; }
-  }
-  return { added: newEntries.length, copied: imageFiles.length, modid, purged, atlas };
+  // 关键：几何 + 图集 + 渲染判定 + 自检 一次性做完。
+  // 缺任何一步都会出问题：几何缺失 → 异形方块退化成整块立方体；缺渲染判定 → 玻璃发黑/非整块被剔面；
+  // 缺自检 → 只能等到在编辑器里看到洋红才发现。
+  const render = applyRenderForMod(modid, allBlocks, { blockTextures });
+  for (const w of render.warnings) console.error('  ⚠ ' + w);
+
+  // 自检结果落进 manifest：UI 不重启也能看到有没有洋红风险
+  manifest.renderReport = render.report;
+  fs.writeFileSync(path.join(IMPORT_DIR, `${modid}.manifest.json`),
+    JSON.stringify(manifest, null, 2), 'utf8');
+
+  return { added: newEntries.length, copied: imageFiles.length, modid, purged, ...render };
 }
 
 // 作为库被 mod-atlas.mjs import 时不执行 CLI
@@ -367,18 +366,16 @@ try {
     summary.copied = ap.copied;
     summary.modid = ap.modid;
     summary.atlas = ap.atlas;
+    summary.renderHints = ap.renderHints ? ap.renderHints.stats : null;
+    summary.renderReport = ap.report;   // 导入自检结果：可渲染 / 隐形 / 有洋红风险
+    summary.warnings = ap.warnings;
     console.log(`已应用: 新增 ${ap.added} 条目, 拷贝 ${ap.copied} 张 PNG, manifest=${ap.modid}`);
-    if (ap.atlas && ap.atlas.ok) {
-      // applyModAtlas 返回 tiles/slotFree，applyModModels 返回 textures/capacity/overflow
-      const tilesN = ap.atlas.tiles ?? ap.atlas.textures;
-      const free = ap.atlas.slotFree ?? (ap.atlas.capacity != null ? ap.atlas.capacity - (ap.atlas.textures || 0) : '?');
-      console.log(`图集注入: ${tilesN} 张贴图 / ${ap.atlas.blocks} 个方块, atlas=${ap.atlas.atlasSize}, 降采样 ${ap.atlas.downscaled} 张, 剩余格 ${free}`);
-      if (ap.atlas.ported != null) {
-        console.log(`  几何: 真实几何 ${ap.atlas.ported}, 兜底立方体 ${ap.atlas.fallback}, 隐形 ${ap.atlas.air}, 贴图溢出 ${ap.atlas.overflow}`);
-      }
-      if (ap.atlas.modelError) console.error('  ⚠ 模型移植失败已降级为整块贴图:', ap.atlas.modelError);
-    } else if (ap.atlas) {
-      console.log(`图集注入失败: ${ap.atlas.error}`);
+    console.log('渲染后处理: ' + formatRenderLine(ap));
+    if (ap.atlas && ap.atlas.atlasSize) {
+      console.log(`  图集尺寸 ${ap.atlas.atlasSize}, 降采样 ${ap.atlas.downscaled ?? 0} 张`);
+    }
+    if (ap.report && ap.report.modBlocksNotRenderable === 0) {
+      console.log('  ✔ 导入自检通过：没有方块取不到图集内纹理（无洋红风险）');
     }
   } else {
     console.log('（dry-run 预览，未修改任何文件）');

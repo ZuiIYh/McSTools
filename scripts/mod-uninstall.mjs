@@ -3,6 +3,7 @@
 import { DB_PATH, FACE_PATH, IMAGES_DIR, BLOCK_TEXTURES_DIR, IMPORT_DIR, loadDb, saveDb, loadFace, saveFace, readManifest, removeEntries, removeFromFace } from './mod-shared.mjs';
 import { revertModAtlas } from './mod-atlas.mjs';
 import { revertModModels } from './mod-models.mjs';
+import { syncRenderHints } from './mod-render-hints.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -40,6 +41,8 @@ if (!dryRun) {
   console.log('图集回滚: ' + (ar.ok ? `移除 ${ar.removed || 0}，剩余模组 ${ar.remainingMods ?? 0}` : ar.note || ar.error));
   fs.rmSync(cacheDir, { recursive: true, force: true });
   fs.rmSync(path.join(IMPORT_DIR, `${modid}.manifest.json`), { force: true });
+  // 渲染判定表重算（该模组方块已从数据里消失 → 判定条目一并收缩）
+  try { summary.renderHints = syncRenderHints().stats; } catch (e) { summary.renderHintsError = String((e && e.message) || e); }
   console.log(`已卸载 ${modid}（彻底移除，重新 install 才可恢复）`);
 }
 console.log('RESULT_JSON=' + JSON.stringify(summary));

@@ -740,6 +740,11 @@ export default {
     blockCount: '{n} blocks',
     imageCount: '{n} textures',
     uninstall: 'Uninstall',
+    refresh: 'Regenerate block rendering',
+    refreshAll: 'Regenerate all',
+    renderable: '{n} renderable',
+    invisible: '{n} invisible',
+    risk: '{n} magenta risk',
     noInstalled: 'No mods installed yet. Pick a mod file to get started.',
     note: 'Uninstall removes blocks and cache completely; disable only hides them and can be re-enabled anytime. Enabled mods auto-reload after the editor mirror is replaced.'
   }

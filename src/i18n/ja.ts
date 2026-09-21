@@ -746,6 +746,11 @@ export default {
     blockCount: 'ブロック {n} 個',
     imageCount: 'テクスチャ {n} 枚',
     uninstall: 'アンインストール',
+    refresh: 'ブロック描画を再生成',
+    refreshAll: 'すべて再生成',
+    renderable: '描画可 {n}',
+    invisible: '不可視 {n}',
+    risk: 'マゼンタ {n}',
     noInstalled: 'まだMODが導入されていません。MODファイルを選択してください。',
     note: 'アンインストールはブロックとキャッシュを完全に削除します。無効化は一時的に非表示にするだけで、いつでも再有効化できます。エディタ镜像を差し替えても有効なMODは自動で再読み込みされます。'
   }

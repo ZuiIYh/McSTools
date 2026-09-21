@@ -746,6 +746,11 @@ export default {
     blockCount: '{n} 个方块',
     imageCount: '{n} 张贴图',
     uninstall: '卸载',
+    refresh: '重新生成方块渲染',
+    refreshAll: '全部重新生成',
+    renderable: '可渲染 {n}',
+    invisible: '隐形 {n}',
+    risk: '洋红风险 {n}',
     noInstalled: '还没有装载任何模组。选择一个模组文件即可开始。',
     note: '提示：卸载会彻底移除方块与缓存；禁用仅让编辑器暂时看不见，可随时重新启用。换编辑器镜像后会自动重载已启用模组。'
   }

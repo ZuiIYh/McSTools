@@ -4,6 +4,7 @@
 import { DB_PATH, FACE_PATH, IMAGES_DIR, BLOCK_TEXTURES_DIR, IMPORT_DIR, loadDb, saveDb, loadFace, saveFace, readManifest, removeEntries, removeFromFace } from './mod-shared.mjs';
 import { revertModAtlas } from './mod-atlas.mjs';
 import { revertModModels } from './mod-models.mjs';
+import { syncRenderHints } from './mod-render-hints.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -41,6 +42,8 @@ if (!dryRun && !alreadyDisabled) {
   console.log('图集回滚: ' + (ar.ok ? `移除 ${ar.removed || 0}，剩余模组 ${ar.remainingMods ?? 0}` : ar.note || ar.error));
   manifest.enabled = false;
   fs.writeFileSync(path.join(IMPORT_DIR, `${modid}.manifest.json`), JSON.stringify(manifest, null, 2), 'utf8');
+  // 渲染判定表也跟着收缩（否则残留的判定会把同名 id 的原版/其它方块判错）
+  try { summary.renderHints = syncRenderHints().stats; } catch (e) { summary.renderHintsError = String((e && e.message) || e); }
   console.log(`已禁用 ${modid}（缓存保留，可 mod-enable 恢复）`);
 }
 console.log('RESULT_JSON=' + JSON.stringify(summary));

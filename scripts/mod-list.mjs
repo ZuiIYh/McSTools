@@ -16,13 +16,20 @@ function list() {
     try {
       const m = JSON.parse(fs.readFileSync(path.join(IMPORT_DIR, f), 'utf8'));
       const cacheDir = path.join(IMPORT_DIR, m.modid || '');
+      const rr = m.renderReport || null;
       out.push({
         modid: m.modid,
         source: m.source || '',
         enabled: m.enabled !== false,
         blocks: (m.blocks || []).length,
         images: (m.imageFiles || []).length,
-        hasCache: fs.existsSync(cacheDir)
+        hasCache: fs.existsSync(cacheDir),
+        // 导入/重刷时的自检结果：让面板直接显示「有没有洋红风险」，不必等进编辑器才发现
+        renderable: rr ? rr.modBlocksRenderable : null,
+        invisible: rr ? rr.modBlocksInvisible : null,
+        risk: rr ? rr.modBlocksNotRenderable : null,
+        riskList: rr ? (rr.modBlocksNotRenderableList || []).slice(0, 10) : [],
+        rebuiltAt: m.rebuiltAt || m.generatedAt || null
       });
     } catch { /* 跳过坏 manifest */ }
   }

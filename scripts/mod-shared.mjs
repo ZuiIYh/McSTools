@@ -24,6 +24,9 @@ export const BLOCK_DEFS = path.join(MCMETA_DIR, 'block-definitions.json');
 export const BLOCK_PROPS = path.join(MCMETA_DIR, 'block-default-properties.json');
 // 模组图集占用登记表：记录每个模组占用的图集格子 / 模型 / 定义，供禁用、卸载时精确回滚
 export const ATLAS_REGISTRY = path.join(MCMETA_DIR, '.mod-atlas.json');
+// 模组方块渲染提示表（是否整块 / 需透明 / 需挖空），由 patch-editor-render.mjs 内联进渲染器。
+// 编辑器把这三类判定硬编码成原版方块名后缀表，模组方块不在表里 → 玻璃贴图发黑、非整块被当整块剔除面。
+export const RENDER_HINTS = path.join(MCMETA_DIR, 'mod-render-hints.json');
 export const IMPORT_DIR = path.join(ROOT, 'src-tauri', 'data', 'editor', 'import', 'mods');
 
 export function loadDb() { return JSON.parse(fs.readFileSync(DB_PATH, 'utf8')); }

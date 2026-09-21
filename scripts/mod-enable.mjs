@@ -5,8 +5,8 @@ import { DB_PATH, FACE_PATH, IMAGES_DIR, BLOCK_TEXTURES_DIR, IMPORT_DIR, loadDb,
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { applyModAtlas, resolveBlockTextures } from './mod-atlas.mjs';
-import { applyModModels } from './mod-models.mjs';
+import { resolveBlockTextures } from './mod-atlas.mjs';
+import { applyRenderForMod, formatRenderLine } from './mod-apply-render.mjs';
 
 export async function enableMod(modid, dryRun = false, opts = {}) {
   const manifest = readManifest(modid);
@@ -36,31 +36,28 @@ export async function enableMod(modid, dryRun = false, opts = {}) {
     } else missingPng++;
   }
   const msg = `启用 ${modid}: 新增 DB 条目 ${added}, 跳过已存在 ${skipped}, 恢复 PNG ${copied}` + (missingPng ? `, 缺缓存PNG ${missingPng}` : '') + (dryRun ? '（dry-run，未修改）' : '');
-  // 3D 注入：优先移植真实几何（异形方块才不是立方体）；资源没缓存时退回整块贴图 + cube_all
-  let atlas = null;
+  // 3D 注入：走与「导入」完全相同的后处理链路（几何+图集 → 渲染判定 → 自检）。
+  // 只走其中一个入口才会出现「刚装的正常、禁用后再启用又坏了」。
+  let render = null;
   if (!dryRun && opts.skipAtlas !== true) {
     const hasAssets = fs.existsSync(path.join(IMPORT_DIR, modid, 'assets'));
-    if (hasAssets) {
+    let blockTextures = manifest.blockTextures;
+    // 缓存里没登记贴图时，尽量从 jar/源包补一份，好在几何不可用时仍能退回 cube_all
+    if ((!Array.isArray(blockTextures) || !blockTextures.length) &&
+        (opts.jar || (manifest.source && fs.existsSync(manifest.source)))) {
       try {
-        atlas = applyModModels(modid, manifest.blocks || []);
+        const bt = await resolveBlockTextures(modid, { jar: opts.jar });
+        if (bt && Array.isArray(bt.blocks) && bt.blocks.length) blockTextures = bt.blocks;
       } catch (e) {
-        // 别静默吞掉：模型移植失败时会退化成整块贴图 + cube_all（异形方块全变立方体），
-        // 保留堆栈以便定位，同时继续走下面的兜底注入。
-        atlas = { ok: false, error: String((e && e.stack) || e) };
-        console.error('模型移植失败，退化为整块贴图 + cube_all:', atlas.error);
+        console.error('解析贴图列表失败（继续尝试几何路径）:', (e && e.message) || e);
       }
     }
-    if (!atlas || !atlas.ok) {
-      const modelError = atlas && atlas.error;
-      try {
-        let bt = manifest.blockTextures;
-        if ((!Array.isArray(bt) || !bt.length) && (opts.jar || (manifest.source && fs.existsSync(manifest.source)))) {
-          bt = (await resolveBlockTextures(modid, { jar: opts.jar })).blocks;
-        }
-        if (Array.isArray(bt) && bt.length) atlas = { ...applyModAtlas(modid, bt), modelError };
-      } catch (e) {
-        atlas = { ok: false, error: String((e && e.message) || e), modelError };
-      }
+    try {
+      render = applyRenderForMod(modid, manifest.blocks || [], { blockTextures, skipGeometry: !hasAssets });
+      for (const w of render.warnings) console.error('  ⚠ ' + w);
+    } catch (e) {
+      // 这里再抛就是脚本级故障了，别让「启用」整体失败：方块库已写回，渲染可事后重刷
+      console.error('渲染后处理失败（方块库已恢复，可在面板上点「重新生成」再试）:', String((e && e.stack) || e));
     }
   }
 
@@ -68,9 +65,16 @@ export async function enableMod(modid, dryRun = false, opts = {}) {
     saveDb(db);
     saveFace(face);
     manifest.enabled = true;
+    if (render && render.report) manifest.renderReport = render.report;
     fs.writeFileSync(path.join(IMPORT_DIR, `${modid}.manifest.json`), JSON.stringify(manifest, null, 2), 'utf8');
   }
-  return { ok: true, added, skipped, copied, missingPng, msg, atlas };
+  return {
+    ok: true, added, skipped, copied, missingPng, msg,
+    atlas: render && render.atlas,
+    renderHints: render && render.renderHints,
+    report: render && render.report,
+    warnings: render ? render.warnings : [],
+  };
 }
 
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
@@ -83,14 +87,8 @@ if (isMain) {
   enableMod(modid, dryRun, { jar }).then((r) => {
     if (!r.ok) { console.error(r.reason); console.log('RESULT_JSON=' + JSON.stringify({ ok: false, reason: r.reason })); process.exit(1); }
     console.log(r.msg);
-    if (r.atlas) {
-      const a = r.atlas;
-      console.log('图集: ' + (a.ok
-        ? `注入 ${a.textures ?? a.tiles ?? 0} 格贴图 / ${a.blocks} 方块` +
-          (a.ported != null ? `（真实几何 ${a.ported}，兜底立方体 ${a.fallback ?? 0}）` : '')
-        : '失败 ' + a.error));
-    }
-    console.log('RESULT_JSON=' + JSON.stringify({ ok: true, modid, added: r.added, skipped: r.skipped, copied: r.copied, missingPng: r.missingPng, atlas: r.atlas, dryRun }));
+    console.log('渲染后处理: ' + formatRenderLine({ atlas: r.atlas, renderHints: r.renderHints, report: r.report }));
+    console.log('RESULT_JSON=' + JSON.stringify({ ok: true, modid, added: r.added, skipped: r.skipped, copied: r.copied, missingPng: r.missingPng, atlas: r.atlas, renderHints: r.renderHints ? r.renderHints.stats : null, renderReport: r.report, warnings: r.warnings, dryRun }));
   }).catch(e => {
     console.log('RESULT_JSON=' + JSON.stringify({ ok: false, error: String(e && e.message || e) }));
     process.exit(1);

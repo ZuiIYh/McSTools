@@ -22,6 +22,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decodePng, encodePng, resizeNearest } from './png.mjs';
+import { bakeObjGeometry } from './mod-obj.mjs';
 import {
   MCMETA_DIR, ATLAS_PNG, ATLAS_UV, BLOCK_MODELS, BLOCK_DEFS, BLOCK_PROPS, ATLAS_REGISTRY, IMPORT_DIR,
 } from './mod-shared.mjs';
@@ -86,12 +87,47 @@ export function loadModAssets(modid, ns = modid) {
       if (f.rel.endsWith('.png')) textureIndex.set(`${ns}:` + f.rel.replace(/\.png$/, ''), f.path);
     }
   }
-  return { blockstates, models, textureIndex };
+  // neoforge:obj 的外部几何：模型 JSON 里只有 textures，真实顶点在 .obj（材质槽在 .mtl）。
+  // 键统一成「去掉命名空间后的相对路径」，如 models/block/blaze_burner/blaze_cage.obj
+  const objs = new Map();
+  const mtls = new Map();
+  const objDir = path.join(base, 'models');
+  if (fs.existsSync(objDir)) {
+    for (const f of walkFiles(objDir)) {
+      if (f.rel.endsWith('.obj')) objs.set('models/' + f.rel, fs.readFileSync(f.path, 'utf8'));
+      else if (f.rel.endsWith('.mtl')) mtls.set('models/' + f.rel, fs.readFileSync(f.path, 'utf8'));
+    }
+  }
+  return { blockstates, models, textureIndex, objs, mtls };
+}
+
+/**
+ * 找出模型链里第一个 `loader: neoforge:obj` 的模型并烘焙真实几何，失败返回 null。
+ * `model` 字段形如 `create:models/block/xxx/y.obj` → 去掉命名空间后查 assets.objs。
+ */
+function bakeObjFromChain(chain, tex, assets) {
+  if (!assets || !assets.objs) return null;
+  for (const n of chain) {
+    const m = n.m;
+    if (!m || !String(m.loader || '').includes('obj')) continue;
+    const raw = m.model;
+    if (typeof raw !== 'string' || !/\.obj$/i.test(raw)) continue;
+    const rel = raw.replace(/^[a-zA-Z0-9_.-]+:/, '');
+    const objText = assets.objs.get(rel);
+    if (!objText) continue;
+    const mtlText = assets.mtls ? (assets.mtls.get(rel.replace(/\.obj$/i, '.mtl')) || null) : null;
+    const els = bakeObjGeometry({
+      objText, mtlText, textures: tex,
+      flipV: m.flip_v === undefined ? true : !!m.flip_v,
+    });
+    if (els && els.length) return els;
+  }
+  return null;
 }
 
 // ---------------- MC 模型展平 ----------------
 /** 沿 parent 链合并 textures，取出离叶子最近的 elements，并把 #变量 解析成具体贴图 ID */
-export function flattenModel(key, modModels, editorModels) {
+export function flattenModel(key, modModels, editorModels, assets) {
   const chain = [];
   let cur = key, guard = 0;
   while (cur && guard++ < 40) {
@@ -104,7 +140,20 @@ export function flattenModel(key, modModels, editorModels) {
   if (!chain.length) return null;
 
   const tex = {};
-  for (const n of chain) Object.assign(tex, n.m.textures || {});
+  // neoforge:composite —— 几何不在顶层 elements，而是分散在 children.* 里。
+  // 先把所有子层的 textures 并进来（子层槽名多为 0/1/2 这类数字，与父层不冲突），
+  // 这样后面解析 face 的 "#0" 才能命中；elements 交给下面统一收集。
+  const childLayers = [];
+  for (const n of chain) {
+    const ch = n.m && n.m.children;
+    if (ch && typeof ch === 'object') {
+      for (const c of Object.values(ch)) if (c && typeof c === 'object') childLayers.push(c);
+    }
+  }
+  for (const c of childLayers) Object.assign(tex, c.textures || {});
+  // ★ 语义：子模型覆盖父模型 → chain 是【叶子→根】，必须倒序合并，否则父层槽名会盖掉子层
+  //   （典型：black_valve_handle 覆盖槽 3 = valve_handle_black，正序合并会退回父层的 _copper）
+  for (let i = chain.length - 1; i >= 0; i--) Object.assign(tex, chain[i].m.textures || {});
   const resolveVar = (v, d = 0) => {
     if (typeof v !== 'string' || !v.startsWith('#') || d > 8) return v;
     const k = v.slice(1);
@@ -112,23 +161,61 @@ export function flattenModel(key, modModels, editorModels) {
   };
   for (const k of Object.keys(tex)) tex[k] = resolveVar(tex[k]);
 
-  let elements = null, textureSize = null;
-  for (let i = chain.length - 1; i >= 0; i--) {
+  let elements = null, textureSize = null, objBaked = false;
+  // ★ 语义：子模型自带 elements 时【整体替换】父层的 → 从叶子向根扫，取最近的一个
+  for (let i = 0; i < chain.length; i++) {
     if (!elements && chain[i].m.elements) elements = chain[i].m.elements;
     if (!textureSize && chain[i].m.texture_size) textureSize = chain[i].m.texture_size;
     if (elements && textureSize) break;
   }
-  if (!elements) return { textures: tex, elements: null, textureSize };
+  // composite 兜底：顶层没有 elements 时，把各个 children 的 elements 合并成一份
+  if (!elements && childLayers.length) {
+    const merged = [];
+    for (const c of childLayers) if (Array.isArray(c.elements)) merged.push(...c.elements);
+    if (merged.length) elements = merged;
+  }
+  // neoforge:obj 兜底：几何在外部 .obj 文件里（blaze_burner / 阀手轮 / 飞轮 / 水车 / 轨道…）。
+  // 必须在 tex 已经解析完（上面的 resolveVar 循环）之后调用 —— MTL 的 `map_Kd #0` 要按槽名查这张表。
+  if (!elements) {
+    const baked = bakeObjFromChain(chain, tex, assets);
+    if (baked) { elements = baked; objBaked = true; }
+  }
+  if (!elements) return { textures: tex, elements: null, textureSize, objBaked: false };
 
   // 渲染器不认 texture_size，UV 一律按 16 归一 → 非 16 的要把 uv 缩放回 16 空间
   const sx = textureSize ? 16 / textureSize[0] : 1;
   const sy = textureSize ? 16 / textureSize[1] : 1;
+  // ★ 渲染器 BlockModel.getTexture() 只按 textures 表的【槽名】解析 face.texture：
+  //     t = t.startsWith("#") ? t.slice(1) : t;   // 去 #
+  //     t = this.textures?.[t] ?? "";             // 无条件查表 —— 裸纹理 id 查不到 → 空串
+  //   即 face.texture 写 "create:block/xxx" 会解析成空串，纹理解析失败 → 方块退回洋红兜底。
+  //   所以必须把纹理登记成槽（优先复用原模型的 all / side / top 等槽名，保持与原版形态一致），
+  //   并让 face 引用 "#槽名"。
+  const reverse = new Map();
+  for (const [k, v] of Object.entries(tex)) {
+    if (typeof v === 'string' && v && !v.startsWith('#')) {
+      const id = norm(v);
+      tex[k] = id;
+      reverse.set(id, k);
+    }
+  }
+  let slotSeq = 0;
+  const slotFor = (rawId) => {
+    if (!rawId) return null;
+    const id = norm(rawId);
+    if (reverse.has(id)) return reverse.get(id);
+    const s = `mtt${(slotSeq++).toString(36)}`;
+    tex[s] = id;
+    reverse.set(id, s);
+    return s;
+  };
   const els = elements.map((el) => {
     const faces = {};
     for (const [fk, fv] of Object.entries(el.faces || {})) {
       const t = fv.texture && String(fv.texture).startsWith('#') ? resolveVar(fv.texture) : (fv.texture ? norm(fv.texture) : null);
       const face = { ...fv };
-      if (t) face.texture = t; else delete face.texture;
+      const slot = slotFor(t);
+      if (slot) face.texture = `#${slot}`; else delete face.texture;
       if (Array.isArray(fv.uv) && (sx !== 1 || sy !== 1)) {
         face.uv = [fv.uv[0] * sx, fv.uv[1] * sy, fv.uv[2] * sx, fv.uv[3] * sy];
       }
@@ -136,7 +223,130 @@ export function flattenModel(key, modModels, editorModels) {
     }
     return { ...el, faces };
   });
-  return { textures: tex, elements: els, textureSize };
+  return { textures: tex, elements: els, textureSize, objBaked };
+}
+
+/**
+ * 模型是否有可用几何。注意 `elements: []` 在 JS 里是 **truthy**，所以旧写法 `!f.elements`
+ * 判不出空模型 —— Create 的 `block/belt/particle` 就是 `{"elements":[]}`（皮带真正的几何由
+ * Flywheel 自定义渲染器出）。这种模型照样会被写进 block-models.json，渲染器拿到 0 个 quad 后
+ * 直接退回洋红兜底立方体（chunk 545：`if (0 === e.quads.length) { ...; e = a() }`）。
+ */
+function hasGeom(f) {
+  return !!(f && Array.isArray(f.elements) && f.elements.length > 0);
+}
+
+/**
+ * 退化占位模型：几何同样交给自定义渲染器的方块（Create 的流体管道），jar 里的模型只是占位 ——
+ * 单个 4→12 的小方块、只挂 1~2 个面，渲染出来就是个"小黑盒子"。
+ * 判据收紧到「单元素 + 完全落在 [4,4,4]-[12,12,12] 内 + 面数 ≤ 2」，实测只命中 create 的
+ * 30 个 fluid_pipe/* 占位模型，与窗格（from=[7,0,7] to=[9,16,9]）等正常薄片互不干扰。
+ */
+function isDegenerateCore(f) {
+  if (!f || !Array.isArray(f.elements) || f.elements.length !== 1) return false;
+  const e = f.elements[0];
+  const a = e.from, b = e.to;
+  if (![a, b].every((v) => Array.isArray(v) && v.length === 3 && v.every(Number.isFinite))) return false;
+  if (a[0] < 4 || a[1] < 4 || a[2] < 4 || b[0] > 12 || b[1] > 12 || b[2] > 12) return false;
+  const n = Object.keys(e.faces || {}).length;
+  return n > 0 && n <= 2;
+}
+
+/**
+ * Create 流体管道的 blockstate 一共 30 个 multipart 条目，引用的模型全是「占位核心」
+ * （4→12 的小方块、只挂 2 个面），真实几何由 Flywheel 出。但 `when` 条件精确说明了
+ * 该条目代表**哪些方向的连接**（例如 lu_x 的 when 是 up=true & south=true，就是"上+南"的弯头）。
+ * 所以按 `when` 合成正确的管子：核心立方体 + 已连接方向的 4px 短管；未连接的方向什么都不画
+ * （呈现为封闭端）。
+ *
+ * ★ 贴图 UV 必须落在一个**不透明**的 tile 上。`pipes_connected.png` 是 32×32 的图集，
+ * 右下半张是透明的；旧实现用 `[0,0,16,16]`（整张）取样，又恰逢 `create:fluid_pipe` 的
+ * 渲染提示是 alphaTest ⇒ 管子被打成筛子。这里统一用 4×4 的不透明 tile。
+ * 所有模型共用同一组「几何 + 贴图 + uv」，因此多个条目同时命中时重叠部分像素完全一致，
+ * 不会出现 z-fighting 观感异常。
+ */
+const PIPE_DIRS = ['up', 'down', 'north', 'south', 'east', 'west'];
+const PIPE_ARMS = {
+  up: [4, 12, 4, 12, 16, 12],
+  down: [4, 0, 4, 12, 4, 12],
+  north: [4, 4, 0, 12, 12, 4],
+  south: [4, 4, 12, 12, 12, 16],
+  west: [0, 4, 4, 4, 12, 12],
+  east: [12, 4, 4, 16, 12, 12],
+};
+const PIPE_CORE = [4, 4, 4, 12, 12, 12];
+const PIPE_UV = [0, 0, 4, 4];
+
+function pipeArms(f, dirs) {
+  const slots = Object.keys(f.textures || {}).filter(
+    (s) => typeof f.textures[s] === 'string' && f.textures[s] && !f.textures[s].startsWith('#'),
+  );
+  const slot = slots.find((s) => s !== 'particle') || slots[0] || null;
+  const faces = () => {
+    const o = {};
+    for (const d of PIPE_DIRS) o[d] = slot ? { texture: `#${slot}`, uv: PIPE_UV.slice() } : { uv: PIPE_UV.slice() };
+    return o;
+  };
+  const box = (a) => ({ from: [a[0], a[1], a[2]], to: [a[3], a[4], a[5]], faces: faces() });
+  const els = [box(PIPE_CORE)];
+  for (const d of PIPE_DIRS) if (dirs && dirs.has(d)) els.push(box(PIPE_ARMS[d]));
+  f.elements = els;
+  return f;
+}
+
+/**
+ * 从 multipart 的 `when` 里取出「值为 true 的方向」——即该模型代表的连接方向。
+ * 只有方向键参与，waterlogged 之类的其它属性忽略。
+ */
+function dirsFromWhen(when) {
+  const s = new Set();
+  if (!when) return s;
+  for (const d of PIPE_DIRS) if (when[d] === 'true' || when[d] === true) s.add(d);
+  return s;
+}
+
+/**
+ * 把退化占位模型换成一根 8px 管径的六向细管十字（核心被六条臂完全包住，所以只出 6 条臂）。
+ * 视觉上就是"每格都连通的管道"，比小黑盒子或实心立方体都更接近原版。
+ * 面贴图一律写 "#槽名"，用模型自己的主贴图槽（优先 "0"、排除 particle）。
+ */
+function pipeCross(f) {
+  const slots = Object.keys(f.textures || {}).filter((s) => typeof f.textures[s] === 'string' && f.textures[s]);
+  const slot = slots.find((s) => s !== 'particle') || slots[0] || null;
+  const faces = (keep) => {
+    const o = {};
+    for (const d of keep) o[d] = slot ? { texture: `#${slot}`, uv: [0, 0, 16, 16] } : { uv: [0, 0, 16, 16] };
+    return o;
+  };
+  // 六条臂从核心 (4→12) 伸到方块边界；与核心相接的那一面省略（永远不可见）
+  f.elements = [
+    { from: [12, 4, 4], to: [16, 12, 12], faces: faces(['east', 'up', 'down', 'north', 'south']) },
+    { from: [0, 4, 4], to: [4, 12, 12], faces: faces(['west', 'up', 'down', 'north', 'south']) },
+    { from: [4, 12, 4], to: [12, 16, 12], faces: faces(['up', 'east', 'west', 'north', 'south']) },
+    { from: [4, 0, 4], to: [12, 4, 12], faces: faces(['down', 'east', 'west', 'north', 'south']) },
+    { from: [4, 4, 12], to: [12, 12, 16], faces: faces(['south', 'east', 'west', 'up', 'down']) },
+    { from: [4, 4, 0], to: [12, 12, 4], faces: faces(['north', 'east', 'west', 'up', 'down']) },
+  ];
+  return f;
+}
+
+/**
+ * 空几何占位模型的替补几何（真正的几何由自定义渲染器出，jar 里只有 textures、没有 elements）：
+ *  - 模型名以 "particle" 结尾的占位（Create 皮带的带面）→ 一块薄板，看起来才像传送带；
+ *  - 其余（无 elements 也无外部 .obj 的占位）→ 满立方体，与整体兜底观感一致。
+ * 用模型自己的贴图槽（优先非 particle）。找不到任何可用贴图槽时返回 null，交回上层走 _fb_ 兜底。
+ * ★ 关键：只替换这一个模型，**不**把整个方块判失败 —— 否则皮带连它正常的 belt_casing 变体会一起丢掉。
+ * ★ neoforge:obj 的模型不走这里：flattenModel 会先把外部 .obj 烘焙成真实几何（见 mod-obj.mjs）。
+ */
+function synthGeom(f, ref) {
+  if (!f) return null;
+  const slots = Object.keys(f.textures || {}).filter((s) => typeof f.textures[s] === 'string' && f.textures[s] && !f.textures[s].startsWith('#'));
+  const slot = slots.find((s) => s !== 'particle') || slots[0];
+  if (!slot) return null;
+  const face = () => ({ texture: `#${slot}`, uv: [0, 0, 16, 16] });
+  const faces = { down: face(), up: face(), north: face(), south: face(), west: face(), east: face() };
+  const box = /\/particle$/.test(String(ref)) ? { from: [0, 4, 0], to: [16, 6, 16] } : { from: [0, 0, 0], to: [16, 16, 16] };
+  return [{ ...box, faces }];
 }
 
 /** cube_all 等价：单个满立方体且六面同贴图（这种不必移植，省格子） */
@@ -165,6 +375,7 @@ export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex
   const blockTex = new Map();     // blockId -> Set(texId)
   const ported = new Set();
   const cube = new Set();
+  const objBaked = new Set();   // 几何来自 neoforge:obj 外部 .obj 的方块
   const missing = [];
   const air = new Set();
 
@@ -219,24 +430,67 @@ export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex
     if (bs.multipart) for (const p of bs.multipart) collectRefs(p.apply);
     if (!refs.length) { fail(blockId); continue; }
 
-    const first = flattenModel(refs[0], modModels, editorModels);
-    if (!first || !first.elements) { fail(blockId); continue; }
+    // multipart 的 when → 该模型代表的连接方向（流体管道靠它合成正确的管形）
+    const dirsOf = new Map();
+    if (bs.multipart) {
+      for (const p of bs.multipart) {
+        const s = dirsFromWhen(p.when);
+        if (!s.size) continue;
+        const arr = Array.isArray(p.apply) ? p.apply : [p.apply];
+        for (const e of arr) {
+          if (!e || !e.model) continue;
+          if (!dirsOf.has(e.model)) dirsOf.set(e.model, new Set());
+          for (const d of s) dirsOf.get(e.model).add(d);
+        }
+      }
+    }
+
+    // 展平一个模型并就地修补退化情况：空几何 → 合成替补几何（薄板 / 立方体）；
+    // 4→12 占位核心 → 细管十字。只有「一个可用贴图槽都没有」时才返回 null（上层走 _fb_ 兜底）。
+    const readModel = (ref) => {
+      const f = flattenModel(ref, modModels, editorModels, assets);
+      if (!f) return null;
+      if (!hasGeom(f)) {
+        const els = synthGeom(f, ref);
+        if (!els) return null;
+        f.elements = els;
+        return f;
+      }
+      // 退化占位模型（如 create:fluid_pipe 的 4→12 小方块）→ 按 when 合成管形，别渲染成小黑盒子
+      if (isDegenerateCore(f)) {
+        const dirs = dirsOf.get(ref);
+        if (dirs && dirs.size) pipeArms(f, dirs);
+        else pipeCross(f);
+      }
+      return f;
+    };
+
+    const first = readModel(refs[0]);
+    if (!first) { fail(blockId); continue; }
+    if (first.objBaked) objBaked.add(blockId);
 
     // 逐个模型展平并写出（渲染器找不到模型会抛异常，必须全部落地）
     const keyOf = new Map();
     let ok = true;
     for (const ref of refs) {
       if (keyOf.has(ref)) continue;
-      const f = flattenModel(ref, modModels, editorModels);
-      if (!f || !f.elements) { ok = false; continue; }
+      const f = readModel(ref);
+      if (!f) { ok = false; continue; }
       const mk = modelKeyFor(modid, ref);
       keyOf.set(ref, mk);
       outModels[mk] = { elements: f.elements };
-      if (f.textures && f.textures.particle) outModels[mk].textures = { particle: norm(f.textures.particle) };
+      // textures 槽表必须整份保留：face.texture 现在是 "#槽名"，只留 particle 会让纹理再次解析失败
+      const texOut = {};
+      for (const [slot, val] of Object.entries(f.textures || {})) {
+        if (typeof val === 'string' && val) texOut[slot] = norm(val);
+      }
+      if (Object.keys(texOut).length) outModels[mk].textures = texOut;
       for (const el of f.elements) {
         for (const fv of Object.values(el.faces || {})) {
           if (fv && fv.texture) {
-            const t = norm(fv.texture);
+            const raw = String(fv.texture);
+            const slot = raw.startsWith('#') ? raw.slice(1) : raw;
+            const t = norm(texOut[slot] || slot);
             noteTex(blockId, t);
             const e = texNeed.get(t) || { src: null, blocks: 0 };
             if (!e.src) e.src = textureIndex.get(t) || (t.startsWith(`${modid}:`) ? null : null);
@@ -284,7 +538,7 @@ export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex
       };
     }
   }
-  return { defs, models: outModels, texNeed, blockTex, ported, cube, missing, air };
+  return { defs, models: outModels, texNeed, blockTex, ported, cube, missing, air, objBaked };
 }
 
 // ---------------- 图集写入 ----------------
@@ -389,31 +643,28 @@ export function applyModModels(modid, blockIds, opts = {}) {
   const allocated = new Set(order.slice(0, capacity));
   const overflow = order.length - allocated.size;
 
-  // 判断哪些方块能完整移植（其全部贴图都已分配或是原版已有条目）
-  const canPort = (blockId) => {
-    const set = geo.blockTex.get(blockId);
-    if (!set) return false;
-    for (const t of set) {
-      if (t.startsWith(`${modid}:`)) { if (!allocated.has(t)) return false; }
-      else if (!(t in uv)) return false;
-    }
-    return true;
-  };
-
   if (dryRun) {
-    let portedN = 0, fallbackN = 0, noneN = 0, airN = 0;
+    let geoKept = 0, cubeNoTex = 0, missingN = 0, airN = 0, needSub = 0;
     for (const blockId of blockIds) {
       if (geo.air.has(blockId)) { airN++; continue; }
-      if (canPort(blockId) && geo.defs[blockId]) { portedN++; continue; }
+      // 新策略：只要模型移植成功就保留几何与变体，贴图缺口改由 substitute 补
+      if (geo.defs[blockId]) { geoKept++; continue; }
       const set = geo.blockTex.get(blockId);
       const has = set && ([...set].some((t) => allocated.has(t)) || [...set].some((t) => t in uv));
-      if (has) fallbackN++; else noneN++;
+      if (has) cubeNoTex++; else missingN++;
     }
+    for (const [t] of geo.texNeed) if (t.startsWith(`${modid}:`) && !(t in uv) && !allocated.has(t)) needSub++;
     return {
       ok: true, dryRun: true, modid,
-      blocks: blockIds.length, ported: portedN, fallback: fallbackN, air: airN, uncovered: noneN,
-      cube: geo.cube.size, missing: geo.missing.length,
+      blocks: blockIds.length,
+      geometryKept: geoKept,          // 保留真实几何+变体（含贴图被替代的）
+      cubeFallback: cubeNoTex + missingN, // 无几何可用，退成单变体立方体
+      missingNoGeom: geo.missing.length,
+      air: airN,
       texturesNeeded: modTex.length, capacity, overflow, noSrc,
+      texturesSubstituted: needSub,    // 需要换成替代贴图的张数
+      cube: geo.cube.size, cubeGeom: geo.cube.size,
+      objBaked: geo.objBaked.size,
       models: Object.keys(geo.models).length,
       baseBottom, atlasSize: `${atlas.w}x${atlas.contentH}`,
     };
@@ -448,6 +699,44 @@ export function applyModModels(modid, blockIds, opts = {}) {
     slot++;
   }
 
+  // ---- 图集格子的平均色 + 源贴图平均色 ----
+  // 用途：名字毫不相干的溢出贴图（substitute 的 weak 分支）不再一律换成石头上，
+  //       而是按平均色（含透明度覆盖）挑一张视觉最接近的，避免「紫色的粉碎轮」这种翻车。
+  const tileMean = new Map();
+  for (const [k, v] of Object.entries(uv)) {
+    if (!Array.isArray(v) || v.length < 4 || v[2] !== TILE || v[3] !== TILE) continue;
+    let r = 0, g = 0, b = 0, a = 0, n = 0;
+    for (let yy = v[1]; yy < v[1] + TILE && yy < MAX_ATLAS_HEIGHT; yy++)
+      for (let xx = v[0]; xx < v[0] + TILE && xx < atlas.w; xx++) {
+        const o = (yy * atlas.w + xx) * 4;
+        const al = atlas.canvas[o + 3] / 255;
+        r += atlas.canvas[o] * al; g += atlas.canvas[o + 1] * al; b += atlas.canvas[o + 2] * al; a += al; n++;
+      }
+    tileMean.set(k, n ? [r / n, g / n, b / n, a / n] : [0, 0, 0, 0]);
+  }
+  const colorCands = [...tileMean.keys()];
+  const srcMeanCache = new Map();
+  const srcMean = (id) => {
+    if (srcMeanCache.has(id)) return srcMeanCache.get(id);
+    let out = [0, 0, 0, 0];
+    try {
+      const v = geo.texNeed.get(id);
+      if (v && v.src) {
+        const d = decodePng(fs.readFileSync(v.src));
+        const step = Math.max(1, Math.floor(Math.min(d.w, d.h) / 16));
+        let r = 0, g = 0, b = 0, a = 0, n = 0;
+        for (let y = 0; y < d.h; y += step) for (let x = 0; x < d.w; x += step) {
+          const o = (y * d.w + x) * 4;
+          const al = d.rgba[o + 3] / 255;
+          r += d.rgba[o] * al; g += d.rgba[o + 1] * al; b += d.rgba[o + 2] * al; a += al; n++;
+        }
+        if (n) out = [r / n, g / n, b / n, a / n];
+      }
+    } catch { /* 解码失败 → 保持全零 */ }
+    srcMeanCache.set(id, out);
+    return out;
+  };
+
   // ---- 写模型 / 定义：每个方块要么用真实几何，要么兜底 cube_all（绝不留空 → 不会变洋红）----
   const pickTex = (blockId) => {
     const set = geo.blockTex.get(blockId);
@@ -459,7 +748,7 @@ export function applyModModels(modid, blockIds, opts = {}) {
   };
   const finalDefs = {};
   const fbModels = {};
-  let written = 0, portedNow = 0, fallbackNow = 0, airNow = 0;
+  let written = 0, portedNow = 0, cubeNow = 0, fallbackNow = 0, airNow = 0;
   for (const blockId of blockIds) {
     // 隐形方块：defs 指向 block/air，不占贴图格子，但仍要写进 registry 以便禁用时精确回滚
     if (geo.air.has(blockId)) {
@@ -467,9 +756,14 @@ export function applyModModels(modid, blockIds, opts = {}) {
       airNow++; written++;
       continue;
     }
-    if (canPort(blockId) && geo.defs[blockId]) {
+    // ★ 几何与变体不受图集预算限制。模型移植成功就写真实定义；
+    //   放不下的贴图由下面的 substitute() 换成同目录/同命名空间的替代贴图。
+    //   以前这里是 canPort(整块否决)——只要有一张贴图没挤进 384 格，就把该方块的
+    //   全部变体丢掉换成一个 cube_all，于是隧道/红石链接/阈值开关这类方块在蓝图里
+    //   "不连接"（几何与朝向全没了）。贴图预算绝不能毁掉几何。
+    if (geo.defs[blockId]) {
       finalDefs[blockId] = geo.defs[blockId];
-      if (geo.ported.has(blockId)) portedNow++;
+      if (geo.ported.has(blockId)) portedNow++; else cubeNow++;
       written++;
       continue;
     }
@@ -491,10 +785,81 @@ export function applyModModels(modid, blockIds, opts = {}) {
     if (d.variants) for (const v of Object.values(d.variants)) collect(v);
     if (d.multipart) for (const p of d.multipart) collect(p.apply);
   }
+  // ---- 贴图替代表：挤不进图集的贴图，换成同目录 / 同命名空间里最相近的已分配贴图 ----
+  // 宁可牺牲那几张贴图的外观，也不丢掉几何与变体（否则方块会退化成立方体 → 蓝图里"不连接"）
+  const uvKeys = Object.keys(uv);
+  const uvSet = new Set(uvKeys);
+  const GENERIC_UV = uvKeys.find((k) => /^block\/(smooth_stone|stone|dirt|cobblestone)$/.test(k))
+    || uvKeys.find((k) => k.startsWith('block/'))
+    || uvKeys[0];
+  const commonPrefix = (a, b) => {
+    const n = Math.min(a.length, b.length);
+    let i = 0;
+    while (i < n && a.charCodeAt(i) === b.charCodeAt(i)) i++;
+    return i;
+  };
+  const subCache = new Map();
+  const subKind = new Map(); // 原贴图 id → 'strong'（文件名像）| 'weak'（只有目录像）
+  const basename = (s) => { const c = s.lastIndexOf('/'); return c >= 0 ? s.slice(c + 1) : s; };
+  const substitute = (t) => {
+    if (uvSet.has(t)) return t;
+    if (subCache.has(t)) return subCache.get(t);
+    const cut = t.lastIndexOf('/');
+    const dir = cut > t.indexOf(':') ? t.slice(0, cut) : '';
+    const nsEnd = t.indexOf(':');
+    const ns = nsEnd >= 0 ? t.slice(0, nsEnd + 1) : '';
+    const base = basename(t);
+    // 打分：同目录优先 → 文件名公共前缀（视觉最相关）→ 全名公共前缀
+    let best = null;
+    const consider = (k, dirw) => {
+      const sBase = commonPrefix(basename(k), base);
+      const sFull = commonPrefix(k, t);
+      const score = dirw * 1e6 + sBase * 1e3 + sFull;
+      if (!best || score > best.score) best = { k, score, sBase, dirw };
+    };
+    for (const k of uvKeys) {
+      if (dir && k.startsWith(`${dir}/`)) consider(k, 2);
+      else if (ns && k.startsWith(ns)) consider(k, 1);
+    }
+    // ★ 关键：文件名完全不沾边（如 crushing_wheel_plates → crate_creative 只共 "cr"）
+    //   就按平均色挑一张最接近的，而不是随机给个颜色完全不对的（紫色）箱子。
+    //   放宽条件只给「很深的子目录」（如 palettes/stone_types/cut/x）——同目录基本同材质。
+    const deepDir = dir.split('/').length >= 3;
+    const related = best && (best.sBase >= 4 || (deepDir && best.dirw === 2 && best.sBase >= 1));
+    let out;
+    if (related) {
+      out = best.k;
+    } else {
+      const want = srcMean(t);
+      let pick = null, bestD = Infinity;
+      for (const k of colorCands) {
+        const c = tileMean.get(k);
+        const dr = c[0] - want[0], dg = c[1] - want[1], db = c[2] - want[2], da = (c[3] - want[3]) * 255;
+        const d = dr * dr + dg * dg + db * db + 4 * da * da;
+        if (d < bestD) { bestD = d; pick = k; }
+      }
+      out = pick || GENERIC_UV || (best && best.k) || t;
+    }
+    if (out !== t) subKind.set(t, related ? 'strong' : 'weak');
+    subCache.set(t, out);
+    return out;
+  };
+
+  let substituted = 0, subStrong = 0, subWeak = 0;
   const modelNames = [];
   for (const [mk, mv] of Object.entries(geo.models)) {
     if (!usedModelKeys.has(mk)) continue;
-    models[mk] = mv;
+    if (mv.textures) {
+      const nt = {};
+      for (const [slot, val] of Object.entries(mv.textures)) {
+        const s = substitute(val);
+        if (s !== val) { substituted++; if (subKind.get(val) === 'strong') subStrong++; else subWeak++; }
+        nt[slot] = s;
+      }
+      models[mk] = { ...mv, textures: nt };
+    } else {
+      models[mk] = mv;
+    }
     modelNames.push(mk);
   }
   for (const [mk, mv] of Object.entries(fbModels)) {
@@ -537,9 +902,16 @@ export function applyModModels(modid, blockIds, opts = {}) {
 
   return {
     ok: true, modid, blocks: blockIds.length, defsWritten: written,
-    ported: portedNow, fallback: fallbackNow, air: airNow,
+    // geometryKept = 保留真实几何与变体的方块数（含贴图被替代的）
+    // cubeFallback = 无几何可用（OBJ/复合加载器/占位模型）而退成单变体立方体的方块数
+    geometryKept: portedNow + cubeNow, cubeFallback: fallbackNow,
+    realGeometry: portedNow, cubeGeom: cubeNow,
+    fallback: fallbackNow, air: airNow,
     cube: geo.cube.size, missing: geo.missing.length,
+    objBaked: geo.objBaked.size,
     textures: Object.keys(tiles).length, capacity, overflow, downscaled,
+    texturesSubstituted: substituted,
+    substituteStrong: subStrong, substituteWeak: subWeak,
     noSource: noSrc.length, atlasSize: `${atlas.w}x${newHeight}`, backedUp,
   };
 }

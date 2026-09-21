@@ -746,6 +746,11 @@
     blockCount: '{n} 個方塊',
     imageCount: '{n} 張貼圖',
     uninstall: '解除安裝',
+    refresh: '重新產生方塊渲染',
+    refreshAll: '全部重新產生',
+    renderable: '可渲染 {n}',
+    invisible: '隱形 {n}',
+    risk: '洋紅風險 {n}',
     noInstalled: '還沒有裝載任何模組。選擇一個模組檔案即可開始。',
     note: '提示：解除安裝會徹底移除方塊與快取；停用僅讓編輯器暫時看不見，可隨時重新啟用。更換編輯器鏡像後會自動重載已啟用模組。'
   }

@@ -29,6 +29,18 @@ interface InstalledMod {
   blocks: number
   images: number
   hasCache: boolean
+  // 导入 / 重刷时的渲染自检结果（mod-list.mjs 从 manifest.renderReport 带出）
+  renderable?: number | null
+  invisible?: number | null
+  risk?: number | null
+  riskList?: string[]
+}
+// 渲染自检：复刻编辑器渲染器规则扫出的「可渲染 / 隐形 / 有洋红风险」方块数
+interface RenderReport {
+  modBlocksRenderable: number
+  modBlocksInvisible: number
+  modBlocksNotRenderable: number
+  modBlocksNotRenderableList?: string[]
 }
 
 const selectedPath = ref('')
@@ -37,6 +49,8 @@ const previewing = ref(false)
 const installing = ref(false)
 const mods = ref<InstalledMod[]>([])
 const loadingList = ref(false)
+const refreshing = ref<Record<string, boolean>>({})
+const refreshingAll = ref(false)
 
 const refresh = async () => {
   loadingList.value = true
@@ -75,12 +89,26 @@ const doPreview = async () => {
   }
 }
 
+/** 把渲染自检结果变成一句话（没有自检结果时返回 null） */
+const reportText = (r?: RenderReport | null) => {
+  if (!r) return null
+  return `自检：可渲染 ${r.modBlocksRenderable}、隐形 ${r.modBlocksInvisible}、有洋红风险 ${r.modBlocksNotRenderable}`
+}
+
 const doInstall = async () => {
   if (!selectedPath.value) return
   installing.value = true
   try {
     const r = await invoke<any>('install_mod_pack', { path: selectedPath.value })
     toast.success(`已装载 ${r.modid}：新增 ${r.added} 个方块、${r.copied} 张贴图`)
+    // 导入时已自动做完 几何+图集 / 渲染判定 / 自检，这里直接把自检结果报出来
+    const line = reportText(r.renderReport)
+    if (r.renderReport?.modBlocksNotRenderable > 0) {
+      toast.error(`${line}（${(r.renderReport.modBlocksNotRenderableList || []).slice(0, 2).join('；')}）`)
+    } else if (line) {
+      toast.info(line)
+    }
+    for (const w of r.warnings || []) toast.info(w)
     preview.value = null
     selectedPath.value = ''
     await refresh()
@@ -88,6 +116,49 @@ const doInstall = async () => {
     toast.error(`装载失败：${e}`)
   } finally {
     installing.value = false
+  }
+}
+
+/** 原地重刷某个模组的渲染数据（几何+图集+渲染判定+自检），不需要重新给 jar */
+const refreshMod = async (mod: InstalledMod) => {
+  refreshing.value = { ...refreshing.value, [mod.modid]: true }
+  try {
+    const r = await invoke<any>('refresh_mod_pack', { modid: mod.modid })
+    const one = (r.results || [])[0]
+    if (r.ok === false || (one && one.ok === false)) {
+      toast.error(`重新生成失败：${(r.failed?.[0]?.reason) || one?.reason || '未知错误'}`)
+    } else {
+      const geo = one?.geometry
+      toast.success(`已重新生成 ${mod.modid}` + (geo ? `：真实几何 ${geo.real}、等价立方体 ${geo.cubeEq}、兜底 ${geo.fallback}` : ''))
+      const line = reportText(one?.renderReport)
+      if (one?.renderReport && one.renderReport.modBlocksNotRenderable > 0) toast.error(line as string)
+      else if (line) toast.info(line)
+    }
+    await refresh()
+  } catch (e) {
+    toast.error(`重新生成失败：${e}`)
+  } finally {
+    const next = { ...refreshing.value }
+    delete next[mod.modid]
+    refreshing.value = next
+  }
+}
+
+/** 一键重刷全部已装模组：升级生成逻辑 / 换过编辑器镜像后用 */
+const refreshAll = async () => {
+  refreshingAll.value = true
+  try {
+    const r = await invoke<any>('refresh_all_mod_packs')
+    if (r.count === 0) { toast.info('没有已安装的模组可重新生成'); return }
+    const risky = r.risky || []
+    if (r.ok && !risky.length) toast.success(`已重新生成 ${r.count} 个模组的渲染数据，自检全部通过`)
+    else toast.error(`重新生成 ${r.count} 个：失败 ${(r.failed || []).length}、有洋红风险 ${risky.length}`)
+    for (const f of r.failed || []) toast.error(`${f.modid}：${f.reason}`)
+    await refresh()
+  } catch (e) {
+    toast.error(`全部重新生成失败：${e}`)
+  } finally {
+    refreshingAll.value = false
   }
 }
 
@@ -190,9 +261,22 @@ onBeforeRouteLeave(navigationGuard)
             <div class="text-subtitle-1 mb-2 d-flex align-center ga-2">
               {{ t('modloader.installedHeading') }}
               <v-progress-circular v-if="loadingList" indeterminate size="16" width="2" color="info" />
+              <v-spacer />
+              <!-- 重刷渲染数据：升级生成逻辑 / 换过编辑器镜像后一键全量重建（不需要重新提供 jar） -->
+              <v-btn
+                v-if="mods.length"
+                size="small"
+                variant="tonal"
+                color="primary"
+                prepend-icon="mdi-refresh"
+                :loading="refreshingAll"
+                @click="refreshAll"
+              >
+                {{ t('modloader.refreshAll') }}
+              </v-btn>
             </div>
 
-            <v-list v-if="mods.length" lines="two" density="compact">
+            <v-list v-if="mods.length" lines="three" density="compact">
               <v-list-item v-for="m in mods" :key="m.modid">
                 <template v-slot:prepend>
                   <v-switch
@@ -211,7 +295,28 @@ onBeforeRouteLeave(navigationGuard)
                   {{ t('modloader.blockCount', { n: m.blocks }) }}　{{ t('modloader.imageCount', { n: m.images }) }}
                   <span v-if="m.source" class="text-medium-emphasis">· {{ m.source }}</span>
                 </v-list-item-subtitle>
+                <!-- 导入 / 重刷时的渲染自检结果：不用进编辑器就能看到有没有洋红风险 -->
+                <v-list-item-subtitle v-if="m.risk != null" class="d-flex align-center ga-2 flex-wrap">
+                  <v-chip size="x-small" color="success" variant="tonal" prepend-icon="mdi-check-circle-outline">
+                    {{ t('modloader.renderable', { n: m.renderable }) }}
+                  </v-chip>
+                  <v-chip v-if="m.invisible" size="x-small" color="grey" variant="tonal">
+                    {{ t('modloader.invisible', { n: m.invisible }) }}
+                  </v-chip>
+                  <v-chip v-if="m.risk" size="x-small" color="error" variant="tonal" prepend-icon="mdi-alert-outline">
+                    {{ t('modloader.risk', { n: m.risk }) }}
+                  </v-chip>
+                </v-list-item-subtitle>
                 <template v-slot:append>
+                  <v-btn
+                    icon="mdi-refresh"
+                    variant="text"
+                    color="primary"
+                    size="small"
+                    :title="t('modloader.refresh')"
+                    :loading="!!refreshing[m.modid]"
+                    @click="refreshMod(m)"
+                  />
                   <v-btn icon="mdi-delete-outline" variant="text" color="error" size="small" :title="t('modloader.uninstall')" @click="uninstall(m)" />
                 </template>
               </v-list-item>

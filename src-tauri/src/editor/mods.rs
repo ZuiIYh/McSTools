@@ -107,3 +107,23 @@ pub async fn uninstall_mod_pack(app: AppHandle, modid: String) -> Result<Value, 
         .await
         .map_err(|e| e.to_string())?
 }
+
+/// 重新生成某个已装载模组的渲染数据（几何 + 图集 + 渲染判定 + 自检）。
+/// 不需要重新提供 jar —— 直接用安装时缓存的资产重刷，秒级完成。
+/// 用途：升级了生成逻辑、换过编辑器镜像、或发现方块渲染异常时原地修复。
+#[tauri::command]
+pub async fn refresh_mod_pack(app: AppHandle, modid: String) -> Result<Value, String> {
+    let args = vec![modid];
+    tauri::async_runtime::spawn_blocking(move || run_script("mod-rebuild.mjs", &args, &app))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+/// 重新生成**全部**已装载模组的渲染数据。换镜像 / 升级生成逻辑后一键全量重刷。
+#[tauri::command]
+pub async fn refresh_all_mod_packs(app: AppHandle) -> Result<Value, String> {
+    let args = vec!["--all".to_string()];
+    tauri::async_runtime::spawn_blocking(move || run_script("mod-rebuild.mjs", &args, &app))
+        .await
+        .map_err(|e| e.to_string())?
+}
