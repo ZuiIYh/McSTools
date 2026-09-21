@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { applyRenderForMod, formatRenderLine } from './mod-apply-render.mjs';
 import { encodePng } from './png.mjs';
+import { extractZipSelective, MOD_ASSET_RE } from './zip.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,22 +35,25 @@ function parseArgs(argv) {
   return a;
 }
 
-export function extractJar(jarPath) {
+/**
+ * 解开模组 jar —— **只抽** assets 下的 blockstates / models / textures / lang。
+ *
+ * 旧实现把 jar 复制成 .zip 再交给 PowerShell `Expand-Archive` 解**整包**：
+ *   ① 慢（实测 Forge 模组 jar ~9 分钟，解出来的 data/、类文件、META-INF 全都没人用）
+ *   ② 抽不到 lang/（当时缓存白名单里就没有它），于是 643 个方块的中文名全空
+ * jar 本身就是 zip，直接用 Node 读中央目录、按需 inflate 即可：
+ *   实测 3000 条目 ~1.5s，且顺带把 lang 带回来（中文名的唯一来源）。
+ */
+export function extractJar(jarPath, filter = MOD_ASSET_RE) {
+  const buf = fs.readFileSync(jarPath);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mc-mod-'));
-  // Expand-Archive 只认 .zip 扩展名，直接喂 .jar 会报「不支持该档案文件格式」。
-  // 因此先把 jar 复制成 .zip 再解。
-  let archive = jarPath;
-  let tmpZip = null;
-  if (path.extname(jarPath).toLowerCase() !== '.zip') {
-    tmpZip = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'mc-mod-zip-')), 'mod.zip');
-    fs.copyFileSync(jarPath, tmpZip);
-    archive = tmpZip;
+  try {
+    extractZipSelective(buf, dir, (n) => filter.test(n));
+    return dir;
+  } catch (e) {
+    fs.rmSync(dir, { recursive: true, force: true });
+    throw new Error(`解包 jar 失败（${path.basename(jarPath)}）: ${e.message}`);
   }
-  const ps = `Expand-Archive -LiteralPath '${archive.replace(/'/g, "''")}' -DestinationPath '${dir}' -Force`;
-  const r = spawnSync('powershell.exe', ['-NoProfile', '-Command', ps], { stdio: 'pipe' });
-  if (r.status !== 0) throw new Error('Expand-Archive failed: ' + (r.stderr || r.stdout));
-  if (tmpZip) fs.rmSync(path.dirname(tmpZip), { recursive: true, force: true });
-  return dir;
 }
 
 function loadLang(p) {
@@ -172,7 +175,13 @@ export function parseMod(extractedDir) {
   for (const ns of namespaces) {
     const bsDir = path.join(assetsDir, ns, 'blockstates');
     if (!fs.existsSync(bsDir)) continue;
-    const lang = loadLang(path.join(assetsDir, ns, 'lang', 'en_us.json'));
+    // en_us 提供英文名、zh_cn 提供中文名；两者键名一致（`block.<ns>.<name>`，语言键不随语言变化）。
+    // 之前只读 en_us 且缓存里根本没有 lang/ → 英文名全靠 titleCase 从 id 猜、中文名恒空。
+    const langDir = path.join(assetsDir, ns, 'lang');
+    const langEn = loadLang(path.join(langDir, 'en_us.json'));
+    const langZh = loadLang(path.join(langDir, 'zh_cn.json'));
+    const langName = (dict, n) => dict[`block.${ns}.${n}`] || dict[`${ns}.${n}`] ||
+                                  dict[`tile.${ns}.${n}`] || '';
     const files = fs.readdirSync(bsDir).filter(f => f.toLowerCase().endsWith('.json'));
     for (const f of files) {
       const name = f.slice(0, -5);
@@ -182,15 +191,15 @@ export function parseMod(extractedDir) {
       try { bs = JSON.parse(fs.readFileSync(path.join(bsDir, f), 'utf8')); } catch { continue; }
       const modelIds = collectModels(bs);
       const hit = pickBlockTexture(extractedDir, modelIds, ns);
-      const english = lang[`block.${ns}.${name}`] || lang[`${ns}.${name}`] ||
-                      lang[`tile.${ns}.${name}`] || titleCase(name);
+      const english = langName(langEn, name) || titleCase(name);
+      const chinese = langName(langZh, name);
       if (!hit) {
         // 没有任何可解析贴图 —— 实测全部是**隐形技术方块**（模型链最终落到 minecraft:block/air，
         // 如 copycat_panel / crushing_wheel_controller / fake_track / water_wheel_structure）。
         // 仍要注册：不注册的话渲染器会给它一个洋红兜底立方体，蓝图里非常显眼。
         // 注册为 invisible，由 mod-models.mjs 把定义指向 block/air（空网格 = 真隐形）。
         blocks.push({ blockId, modid: ns, name, texId: null, pngSource: null,
-                      pngTarget: AIR_ICON, english, chinese: '', invisible: true,
+                      pngTarget: AIR_ICON, english, chinese, invisible: true,
                       srcModels: modelIds });
         seenBlockIds.add(blockId);
         airBlocks.push(blockId);
@@ -199,7 +208,7 @@ export function parseMod(extractedDir) {
       const pngBase = path.basename(hit.texId.split('/').pop());
       const pngTarget = `${ns}__${pngBase}.png`;
       blocks.push({ blockId, modid: ns, name, texId: hit.texId,
-                    pngSource: hit.pngSource, pngTarget, english, chinese: '' });
+                    pngSource: hit.pngSource, pngTarget, english, chinese });
       seenBlockIds.add(blockId);
     }
   }
@@ -231,8 +240,21 @@ export function cacheModAssets(extractedDir, modid, ns = modid) {
       }
     })(s, path.join(dst, rel));
   };
-  for (const r of ['blockstates', 'models/block', 'textures/block', 'textures/fluid']) copyRel(r);
+  // ★ 缓存集合必须与 extractJar 的抽取集合**完全一致**（blockstates/models/textures/lang）：
+  // 禁用后用 `--source=import/mods/<modid>` 重新启用时，parseMod 读的就是这里 —— 少一个目录，
+  // 「启用」的结果就和「首次导入」不一样（此前缺 lang → 重新启用后中文名全空；缺 models/item
+  // 则 parent 指向 item 模型的方块会解析退化）。
+  for (const r of ['blockstates', 'models', 'textures', 'lang']) copyRel(r);
   return { copied, dir: dst };
+}
+
+/** 读已有 manifest 里记录的原始 jar 路径（没有则 null） */
+function readSourceJar(modid) {
+  try {
+    const p = path.join(IMPORT_DIR, `${modid}.manifest.json`);
+    if (!fs.existsSync(p)) return null;
+    return JSON.parse(fs.readFileSync(p, 'utf8')).sourceJar || null;
+  } catch { return null; }
 }
 
 function applyMod(result, args, extractedDir = null) {
@@ -296,6 +318,10 @@ function applyMod(result, args, extractedDir = null) {
   const manifest = {
     modid,
     source: args.jar || args.source || '',
+    // 原始 jar 的绝对路径。`source` 在「用缓存目录重装」时会退化成缓存路径，
+    // 于是原 jar 位置就丢了 —— 而补 lang、换版本重装都需要它。
+    // 用缓存目录重装时沿用旧值，别把它清成 null。
+    sourceJar: args.jar || readSourceJar(modid),
     enabled: true,
     blocks: allBlocks,
     imageFiles,

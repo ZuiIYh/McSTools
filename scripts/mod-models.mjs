@@ -618,7 +618,21 @@ export function applyModModels(modid, blockIds, opts = {}) {
     atlas.contentH);
   const perRow = Math.floor(atlas.w / TILE);
   const rowCount = Math.floor((MAX_ATLAS_HEIGHT - baseBottom) / TILE);
-  const capacity = perRow * rowCount;
+  // ★ 只在**没被别的模组占住**的格子里分配。
+  //   此前 slot 一律从 0 开始数，于是每导入一个新模组都会把先导入模组的贴图整片覆盖；
+  //   更麻烦的是收尾按「本模组的最后一行」重算图集高度，会把先导入模组占用的行裁掉
+  //   → 那些贴图落到图片边界之外，渲染器采样到空白，方块看上去「贴图丢了」。
+  const usedSlots = new Set();
+  for (const v of Object.values(uv)) {
+    if (!Array.isArray(v) || v.length < 4) continue;
+    if (v[1] < baseBottom) continue;               // baseBottom 以上是原版内容区
+    const col = Math.floor(v[0] / TILE), row = Math.floor((v[1] - baseBottom) / TILE);
+    if (v[0] - col * TILE !== 0 || v[1] - baseBottom - row * TILE !== 0) continue; // 非整格条目不参与
+    usedSlots.add(row * perRow + col);
+  }
+  const freeSlots = [];
+  for (let s = 0; s < perRow * rowCount; s++) if (!usedSlots.has(s)) freeSlots.push(s);
+  const capacity = freeSlots.length;
 
   // 需要的模组贴图（原版贴图复用已有条目，不占格）
   const needed = [...geo.texNeed.entries()].filter(([t]) => t.startsWith(`${modid}:`) || !t.includes(':'));
@@ -636,12 +650,60 @@ export function applyModModels(modid, blockIds, opts = {}) {
     }
     if (best) reserved.add(best);
   }
-  // 其余按共享度降序
-  const rest = modTex.map(([t, v]) => t).filter((t) => !reserved.has(t))
-    .sort((a, b) => (geo.texNeed.get(b).blocks - geo.texNeed.get(a).blocks));
-  const order = [...reserved, ...rest];
+  // 源贴图的透明类别：opaque=无透明像素 / cut=有全透明像素 / blend=有半透明像素。
+  // ★ 图集只有 384 格而需求 663 张，必然有溢出，溢出者会被 substitute() 换成「别的贴图」。
+  //   而「透明贴图被换成不透明贴图」是灾难性的：create:fluid_tank 的玻璃面用
+  //   create:block/fluid_tank_window，它与 create:block/fluid_tank 的文件名公共前缀长达 10，
+  //   于是被判为「强相似」而换成不透明金属贴图 → 玻璃整个消失、透明标记也永远打不上
+  //   （alphaPct 恒为 0）。所以让**含透明像素的贴图优先占格**：透明的视觉不可替代，
+  //   不透明贴图互相替换（颜色相近）损失小得多。
+  const srcAlphaKind = new Map();
+  const srcAlpha = (t) => {
+    if (srcAlphaKind.has(t)) return srcAlphaKind.get(t);
+    let kind = 'opaque';
+    try {
+      const v = geo.texNeed.get(t);
+      if (v && v.src) {
+        const d = decodePng(fs.readFileSync(v.src));
+        const n = d.w * d.h;
+        let z = 0, m = 0;
+        for (let i = 0; i < n; i++) {
+          const a = d.rgba[i * 4 + 3];
+          if (a < 8) z++; else if (a < 248) m++;
+        }
+        if (m / n >= 0.05) kind = 'blend'; else if (z / n >= 0.05) kind = 'cut';
+      }
+    } catch { /* 解码失败 → 当作不透明 */ }
+    srcAlphaKind.set(t, kind);
+    return kind;
+  };
+  // 其余排序：透明贴图优先保真，其次按共享度降序
+  const rest = modTex.map(([t]) => t).filter((t) => !reserved.has(t))
+    .sort((a, b) => {
+      const ta = srcAlpha(a) === 'opaque' ? 0 : 1;
+      const tb = srcAlpha(b) === 'opaque' ? 0 : 1;
+      if (ta !== tb) return tb - ta;      // 透明贴图排前面，优先占格
+      return geo.texNeed.get(b).blocks - geo.texNeed.get(a).blocks;
+    });
+  // 总排序：① 含透明像素的贴图整体优先（视觉不可替代 —— 玻璃换成不透明就等于消失）
+  //        ② 保底贴图次之（reserved：每方块共享度最高的一张，保证不至于整块无贴图）
+  //        ③ 其余按共享度降序
+  // 注意不能直接 [...reserved, ...rest]：reserved 是「每方块各挑一张」，数量可达数百，
+  // 其中绝大多数是不透明贴图，会把透明贴图挤在后面（实测透明贴图只进 254/318）。
+  const order = [...reserved, ...rest].sort((a, b) => {
+    const ta = srcAlpha(a) === 'opaque' ? 0 : 1;
+    const tb = srcAlpha(b) === 'opaque' ? 0 : 1;
+    if (ta !== tb) return tb - ta;
+    const ra = reserved.has(a) ? 1 : 0;
+    const rb = reserved.has(b) ? 1 : 0;
+    if (ra !== rb) return rb - ra;
+    return geo.texNeed.get(b).blocks - geo.texNeed.get(a).blocks;
+  });
   const allocated = new Set(order.slice(0, capacity));
   const overflow = order.length - allocated.size;
+  // 透明贴图的保真情况（诊断：384 格能否装下全部「含透明像素」的贴图）
+  const alphaTexNeed = order.filter((t) => srcAlpha(t) !== 'opaque').length;
+  const alphaTexInAtlas = order.slice(0, capacity).filter((t) => srcAlpha(t) !== 'opaque').length;
 
   if (dryRun) {
     let geoKept = 0, cubeNoTex = 0, missingN = 0, airN = 0, needSub = 0;
@@ -663,6 +725,7 @@ export function applyModModels(modid, blockIds, opts = {}) {
       air: airN,
       texturesNeeded: modTex.length, capacity, overflow, noSrc,
       texturesSubstituted: needSub,    // 需要换成替代贴图的张数
+      alphaTexNeed, alphaTexInAtlas,
       cube: geo.cube.size, cubeGeom: geo.cube.size,
       objBaked: geo.objBaked.size,
       models: Object.keys(geo.models).length,
@@ -684,10 +747,11 @@ export function applyModModels(modid, blockIds, opts = {}) {
 
   // ---- 写贴图 ----
   const tiles = {};
-  let slot = 0, downscaled = 0;
+  let slotIdx = 0, downscaled = 0;
   for (const texId of order) {
     if (!allocated.has(texId)) continue;
-    if (slot >= capacity) break;
+    if (slotIdx >= freeSlots.length) break;
+    const slot = freeSlots[slotIdx];     // ★ 取下一个**空闲**格，而非顺序递增的 slot
     const x = (slot % perRow) * TILE;
     const y = baseBottom + Math.floor(slot / perRow) * TILE;
     const src = geo.texNeed.get(texId).src;
@@ -696,18 +760,27 @@ export function applyModModels(modid, blockIds, opts = {}) {
     blit(atlas.canvas, atlas.w, tile16(src), x, y);
     uv[texId] = [x, y, TILE, TILE];
     tiles[texId] = [x, y, TILE, TILE];
-    slot++;
+    slotIdx++;
   }
 
   // ---- 图集格子的平均色 + 源贴图平均色 ----
   // 用途：名字毫不相干的溢出贴图（substitute 的 weak 分支）不再一律换成石头上，
   //       而是按平均色（含透明度覆盖）挑一张视觉最接近的，避免「紫色的粉碎轮」这种翻车。
   const tileMean = new Map();
+  const tileHasAlpha = new Map();   // 图集内该格是否含透明像素 → substitute 判「同类透明特性」用
   for (const [k, v] of Object.entries(uv)) {
-    if (!Array.isArray(v) || v.length < 4 || v[2] !== TILE || v[3] !== TILE) continue;
+    if (!Array.isArray(v) || v.length < 4) continue;
+    const [tx, ty, tw, th] = v;
+    // 先判透明特性：出现任一 alpha<248 的像素即算「透明类」
+    let hasA = false;
+    for (let yy = ty; yy < ty + th && yy < MAX_ATLAS_HEIGHT && !hasA; yy++)
+      for (let xx = tx; xx < tx + tw && xx < atlas.w; xx++)
+        if (atlas.canvas[(yy * atlas.w + xx) * 4 + 3] < 248) { hasA = true; break; }
+    tileHasAlpha.set(k, hasA);
+    if (tw !== TILE || th !== TILE) continue;
     let r = 0, g = 0, b = 0, a = 0, n = 0;
-    for (let yy = v[1]; yy < v[1] + TILE && yy < MAX_ATLAS_HEIGHT; yy++)
-      for (let xx = v[0]; xx < v[0] + TILE && xx < atlas.w; xx++) {
+    for (let yy = ty; yy < ty + TILE && yy < MAX_ATLAS_HEIGHT; yy++)
+      for (let xx = tx; xx < tx + TILE && xx < atlas.w; xx++) {
         const o = (yy * atlas.w + xx) * 4;
         const al = atlas.canvas[o + 3] / 255;
         r += atlas.canvas[o] * al; g += atlas.canvas[o + 1] * al; b += atlas.canvas[o + 2] * al; a += al; n++;
@@ -799,7 +872,8 @@ export function applyModModels(modid, blockIds, opts = {}) {
     return i;
   };
   const subCache = new Map();
-  const subKind = new Map(); // 原贴图 id → 'strong'（文件名像）| 'weak'（只有目录像）
+  const subKind = new Map(); // 原贴图 id → 'strong'（文件名像）| 'weak'（颜色像）
+  const subAlpha = { ok: 0, crossed: 0 };   // 替代后透明特性是否保持（crossed = 被迫跨类）
   const basename = (s) => { const c = s.lastIndexOf('/'); return c >= 0 ? s.slice(c + 1) : s; };
   const substitute = (t) => {
     if (uvSet.has(t)) return t;
@@ -809,38 +883,72 @@ export function applyModModels(modid, blockIds, opts = {}) {
     const nsEnd = t.indexOf(':');
     const ns = nsEnd >= 0 ? t.slice(0, nsEnd + 1) : '';
     const base = basename(t);
+    // ★ 替代必须保持「透明特性同类」：透明贴图只能换透明贴图、不透明只换不透明。
+    //   否则玻璃会被换成实心金属 —— create:fluid_tank 的玻璃面用 fluid_tank_window，
+    //   它与 fluid_tank 的文件名公共前缀长达 10，被判「强相似」后换成不透明金属贴图，
+    //   于是玻璃整片消失（透明标记也因此永远打不上，alphaPct 恒为 0）。
+    const wantAlpha = srcAlpha(t) !== 'opaque';
+    const sameKind = (k) => (tileHasAlpha.get(k) === true) === wantAlpha;
     // 打分：同目录优先 → 文件名公共前缀（视觉最相关）→ 全名公共前缀
     let best = null;
-    const consider = (k, dirw) => {
+    const consider = (k, dirw, strict) => {
+      if (strict && !sameKind(k)) return;
       const sBase = commonPrefix(basename(k), base);
       const sFull = commonPrefix(k, t);
       const score = dirw * 1e6 + sBase * 1e3 + sFull;
       if (!best || score > best.score) best = { k, score, sBase, dirw };
     };
-    for (const k of uvKeys) {
-      if (dir && k.startsWith(`${dir}/`)) consider(k, 2);
-      else if (ns && k.startsWith(ns)) consider(k, 1);
-    }
+    const scanByName = (strict) => {
+      best = null;
+      for (const k of uvKeys) {
+        if (dir && k.startsWith(`${dir}/`)) consider(k, 2, strict);
+        else if (ns && k.startsWith(ns)) consider(k, 1, strict);
+      }
+      return best;
+    };
+    scanByName(true);                 // 优先在同透明类别里找同名/同目录的
+    if (!best) scanByName(false);     // 同类里没有 → 放开类别
     // ★ 关键：文件名完全不沾边（如 crushing_wheel_plates → crate_creative 只共 "cr"）
     //   就按平均色挑一张最接近的，而不是随机给个颜色完全不对的（紫色）箱子。
-    //   放宽条件只给「很深的子目录」（如 palettes/stone_types/cut/x）——同目录基本同材质。
-    const deepDir = dir.split('/').length >= 3;
-    const related = best && (best.sBase >= 4 || (deepDir && best.dirw === 2 && best.sBase >= 1));
+    //   注意 create 的贴图大量是扁平的 create:block/xxx（目录只有 2 段），
+    //   这类「同目录」信号很弱（= 同模组），所以文件名要求更严（≥3 字符）；
+    //   深层子目录（≥3 段，如 palettes/stone_types/cut/x）同目录基本同材质，放宽到 1 字符。
+    const dirDepth = dir.split('/').length;
+    const related = best && (best.sBase >= 4
+      || (best.dirw === 2 && best.sBase >= (dirDepth >= 3 ? 1 : 3)));
     let out;
     if (related) {
       out = best.k;
     } else {
       const want = srcMean(t);
-      let pick = null, bestD = Infinity;
-      for (const k of colorCands) {
+      const colorDist = (k) => {
         const c = tileMean.get(k);
         const dr = c[0] - want[0], dg = c[1] - want[1], db = c[2] - want[2], da = (c[3] - want[3]) * 255;
-        const d = dr * dr + dg * dg + db * db + 4 * da * da;
-        if (d < bestD) { bestD = d; pick = k; }
-      }
-      out = pick || GENERIC_UV || (best && best.k) || t;
+        return dr * dr + dg * dg + db * db + 4 * da * da;
+      };
+      const scanColor = (strict, local) => {
+        let pick = null, bestD = Infinity;
+        for (const k of colorCands) {
+          if (strict && !sameKind(k)) continue;
+          if (local && !((dir && k.startsWith(`${dir}/`)) || (ns && k.startsWith(ns)))) continue;
+          const d = colorDist(k);
+          if (d < bestD) { bestD = d; pick = k; }
+        }
+        return pick;
+      };
+      // 优先级：同目录/同命名空间 + 同透明特性 → 同目录/同命名空间 → 全局 + 同透明特性 → 全局。
+      // 最后一层"局部优先"很关键：create 的金属罐壁（create:block/fluid_tank）若直接全局找最近色，
+      // 会被换成原版 block/chiseled_copper —— 颜色接近但风格完全不是一套。
+      const pick = scanColor(true, true) || scanColor(false, true)
+        || scanColor(true, false) || scanColor(false, false);
+      // 透明源绝不允许退回 GENERIC_UV（石头）→ 宁可选图集里任意一张透明贴图
+      const finalPick = pick || (wantAlpha ? uvKeys.find((k) => tileHasAlpha.get(k) === true) : null);
+      out = finalPick || GENERIC_UV || (best && best.k) || t;
     }
-    if (out !== t) subKind.set(t, related ? 'strong' : 'weak');
+    if (out !== t) {
+      subKind.set(t, related ? 'strong' : 'weak');
+      if ((tileHasAlpha.get(out) === true) === wantAlpha) subAlpha.ok++; else subAlpha.crossed++;
+    }
     subCache.set(t, out);
     return out;
   };
@@ -883,9 +991,16 @@ export function applyModModels(modid, blockIds, opts = {}) {
     if (k in defs && JSON.stringify(defs[k]) !== JSON.stringify(v)) throw new Error(`block-definitions 原版条目被改写: ${k}`);
   }
 
+  // 图集高度 = max(本模组最后一行, 其它模组已占用的最后一行, 现有图片高度) —— **只增不减**。
+  // 一旦某次重算让高度变矮，超出新高度的那些已落盘贴图就落到图片边界之外，
+  // 渲染器采样到 canvas 空白 → 方块贴图整片消失（曾把 create 的 256 张贴图裁掉）。
   let maxEnd = baseBottom;
   for (const r of Object.values(tiles)) maxEnd = Math.max(maxEnd, r[1] + r[3]);
-  const newHeight = Math.max(baseBottom, maxEnd);
+  for (const v of Object.values(uv)) {
+    if (!Array.isArray(v) || v.length < 4 || v[1] < baseBottom) continue;
+    maxEnd = Math.max(maxEnd, v[1] + Math.min(v[3], v[2]));
+  }
+  const newHeight = Math.max(baseBottom, atlas.contentH, maxEnd);
 
   registry.baseBottom = baseBottom;
   registry.mods[modid] = {
@@ -912,6 +1027,8 @@ export function applyModModels(modid, blockIds, opts = {}) {
     textures: Object.keys(tiles).length, capacity, overflow, downscaled,
     texturesSubstituted: substituted,
     substituteStrong: subStrong, substituteWeak: subWeak,
+    substituteKeepAlpha: subAlpha.ok, substituteCrossAlpha: subAlpha.crossed,
+    alphaTexNeed, alphaTexInAtlas,
     noSource: noSrc.length, atlasSize: `${atlas.w}x${newHeight}`, backedUp,
   };
 }
@@ -938,7 +1055,8 @@ export function revertModModels(modid, opts = {}) {
   const baseBottom = registry.baseBottom ?? atlas.contentH;
   let maxEnd = baseBottom;
   for (const e of Object.values(registry.mods)) for (const r of Object.values(e.tiles || {})) maxEnd = Math.max(maxEnd, r[1] + r[3]);
-  const newHeight = Math.max(baseBottom, maxEnd, 1);
+  // 同样只增不减（见上方注释）：撤掉一个模组不该让其它模组的贴图掉出图片边界
+  const newHeight = Math.max(baseBottom, atlas.contentH, maxEnd, 1);
 
   writeAtomic(ATLAS_PNG, encodePng(atlas.w, newHeight, atlas.canvas.subarray(0, atlas.w * newHeight * 4)));
   writeAtomic(ATLAS_UV, JSON.stringify(uv));
