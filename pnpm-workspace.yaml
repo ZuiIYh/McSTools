@@ -2,4 +2,8 @@ packages:
   - "."
 
 allowBuilds:
+  # esbuild 的安装脚本必须执行（vite 依赖）
   esbuild: true
+  # sass(JS 版) 的 watcher 原生绑定，本项目用 sass-embedded，无需构建；
+  # 显式置 false，否则 pnpm ≥11 在新装时以 ERR_PNPM_IGNORED_BUILDS 退出 1
+  '@parcel/watcher': false
