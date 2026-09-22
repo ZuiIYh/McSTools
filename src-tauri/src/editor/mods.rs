@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use serde_json::Value;
@@ -16,14 +16,32 @@ const DEFAULT_NODE: &str = if cfg!(windows) { "node.exe" } else { "node" };
 /// 指向构建机上的仓库路径，在用户机器上必然不存在）—— 面板于是报
 /// 「找不到装载器脚本：D:\a\<repo>\<repo>\src-tauri\..\scripts\mod-list.mjs」。
 fn scripts_dir(app: &AppHandle) -> Result<PathBuf, String> {
+    /// 一个基准目录下的两种可能布局：`<base>/scripts` 与 `<base>/_up_/scripts`。
+    ///
+    /// ⚠️ `_up_` 必须**拆成两段** join —— `PathBuf::join("_up_/scripts")` 不会把 `/` 当分隔符，
+    /// 而 Windows 的 verbatim(`\\?\`) 路径下 `/` 不被识别，会让 is_file() 假失败
+    /// → 表现就是「读不出已装模组、也无法解析导入」（两个功能共用这条查找链路）。
+    fn push_layouts(out: &mut Vec<PathBuf>, base: &Path) {
+        out.push(base.join("scripts"));
+        out.push(base.join("_up_").join("scripts"));
+    }
+
     let mut candidates: Vec<PathBuf> = Vec::new();
 
     if let Ok(directory) = app.path().resolve("scripts", BaseDirectory::Resource) {
         candidates.push(directory);
     }
-    if let Ok(directory) = app.path().resource_dir() {
+    if let Ok(directory) = app.path().resolve("_up_", BaseDirectory::Resource) {
         candidates.push(directory.join("scripts"));
-        candidates.push(directory.join("_up_/scripts"));
+    }
+    if let Ok(resource_dir) = app.path().resource_dir() {
+        push_layouts(&mut candidates, &resource_dir);
+    }
+    // 少数打包布局会把资源放到可执行文件旁边
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(dir) = exe.parent() {
+            push_layouts(&mut candidates, dir);
+        }
     }
     candidates.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../scripts"));
 

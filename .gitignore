@@ -15,8 +15,9 @@ dist-ssr
 
 # 构建期生成物：内置 Node 运行时（由 scripts/fetch-node.mjs 抓取）
 src-tauri/binaries/
-# 构建期生成物：编辑器镜像内容指纹（由 scripts/stamp-base-id.mjs 生成）
+# 构建期生成物：编辑器镜像内容指纹 + 基线自带模组清单（均由 scripts/stamp-base-id.mjs 生成）
 src-tauri/data/editor/base-id.txt
+src-tauri/data/editor/base-mods.txt
 
 # Editor directories and files
 .vscode/*

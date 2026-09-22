@@ -183,7 +183,9 @@ pub fn base_data_root(app: &AppHandle) -> Result<PathBuf, String> {
     }
     if let Ok(directory) = app.path().resource_dir() {
         candidates.push(directory.join("data"));
-        candidates.push(directory.join("_up_/data"));
+        // ⚠️ 拆成两段 join：`join("_up_/data")` 不会把 `/` 当分隔符，
+        // Windows verbatim(`\\?\`) 路径下 `/` 不被识别 → is_file() 假失败。
+        candidates.push(directory.join("_up_").join("data"));
     }
     candidates.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data"));
 
@@ -242,16 +244,36 @@ fn read_base_id(dir: &Path) -> String {
         .to_string()
 }
 
-/// 用户层里是否存在「非内置」的模组清单 —— 用于决定播种后是否需要重套用。
+/// 用户层里是否存在「基线不带」的模组清单 —— 用于决定播种后是否需要重套用。
 ///
-/// 内置的 `create` 已随基线应用过，不算；其余都要重放一遍才能回到 DB/图集里。
-fn has_user_mods(user_editor: &Path) -> bool {
+/// 判定以构建期生成的 `base-mods.txt`（基线自带模组清单，见 `scripts/stamp-base-id.mjs`）为准：
+/// 清单里没有的 manifest 才算用户自装，需要重放一遍把方块写回 DB/图集。
+///
+/// ⚠️ 不能硬编码「排除 create」—— 基线里其实还有 `create_connected` 等预烘焙模组，
+/// 那样会让**每次全新安装的首次启动**都误触发一遍重套用（重烤 643 方块图集，还会与编辑器抢写文件）。
+/// `base-mods.txt` 缺失时退回「基线目录里没有同名文件」的弱判定。
+fn has_user_mods(user_editor: &Path, base_editor: &Path) -> bool {
     let Ok(entries) = fs::read_dir(user_editor.join("import/mods")) else {
         return false;
     };
+    let baked: Vec<String> = fs::read_to_string(base_editor.join("base-mods.txt"))
+        .unwrap_or_default()
+        .lines()
+        .map(|line| line.trim().to_string())
+        .filter(|line| !line.is_empty())
+        .collect();
+    let base_mods = base_editor.join("import/mods");
+
     entries.flatten().any(|entry| {
         let name = entry.file_name().to_string_lossy().to_string();
-        name.ends_with(".manifest.json") && name != "create.manifest.json"
+        let Some(modid) = name.strip_suffix(".manifest.json") else {
+            return false;
+        };
+        if !baked.is_empty() {
+            // 有构建期清单就以它为准（清单外的都算用户自装，含从旧安装目录迁移过来的）
+            return !baked.iter().any(|baked_id| baked_id == modid);
+        }
+        !base_mods.join(&name).exists()
     })
 }
 
@@ -275,7 +297,7 @@ pub fn ensure_user_data(app: &AppHandle) -> Result<PathBuf, String> {
         // 过渡场景：旧版把模组写在安装目录。NSIS/wiX 卸载只删「清单内」文件，
         // 删不到用户自装的 import/mods/<modid>，于是升级后它们仍在基线里 → 已被播种进用户层。
         // 但方块尚未进 DB/图集，这里补一次重套用把它们恢复回来。
-        if has_user_mods(&user_editor) {
+        if has_user_mods(&user_editor, &base_editor) {
             mods::reapply_installed_mods(app);
         }
         return Ok(user);
@@ -416,7 +438,7 @@ fn projection_url(app: &AppHandle, state: &EditorState, id: i64) -> Result<Strin
 
 #[cfg(test)]
 mod tests {
-    use super::{copy_tree, read_base_id, write_schematic_file};
+    use super::{copy_tree, has_user_mods, read_base_id, write_schematic_file};
     use std::fs;
 
     
@@ -485,6 +507,33 @@ mod tests {
             "用户模组缓存不能被删（刷新是覆盖式、不删多余文件）"
         );
         assert_eq!(read_base_id(&user), "v2", "指纹要跟进基线，下轮不再重复刷新");
+
+        let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn detects_user_mods_by_baked_list() {
+        let root = std::env::temp_dir().join(format!("mcstools-usermods-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        let base = root.join("base/editor");
+        let user = root.join("user/editor");
+        fs::create_dir_all(base.join("import/mods")).expect("建基线 mods");
+        fs::create_dir_all(user.join("import/mods")).expect("建用户 mods");
+        fs::write(base.join("base-mods.txt"), "create\ncreate_connected\n").expect("写基线清单");
+
+        // 基线自带两个模组：播种后用户层与基线一致 → 不应触发重套用
+        for modid in ["create", "create_connected"] {
+            fs::write(base.join(format!("import/mods/{modid}.manifest.json")), b"{}").expect("写基线 manifest");
+            fs::write(user.join(format!("import/mods/{modid}.manifest.json")), b"{}").expect("写用户 manifest");
+        }
+        assert!(
+            !has_user_mods(&user, &base),
+            "只有基线自带模组时不该触发重套用（否则每次全新安装首启都白烤一遍图集）"
+        );
+
+        // 出现基线清单外的模组（例如从旧安装目录迁移过来的）→ 应触发
+        fs::write(user.join("import/mods/mymod.manifest.json"), b"{}").expect("写用户自装 manifest");
+        assert!(has_user_mods(&user, &base), "出现基线清单外的模组应触发重套用");
 
         let _ = fs::remove_dir_all(&root);
     }

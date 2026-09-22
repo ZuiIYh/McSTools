@@ -21,7 +21,10 @@ function listFiles(dir, base = dir, acc = []) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
     if (e.isDirectory()) listFiles(p, base, acc);
-    else if (e.name !== 'base-id.txt') acc.push(path.relative(base, p).split(path.sep).join('/'));
+    else if (e.name !== 'base-id.txt' && e.name !== 'base-mods.txt') {
+      // 两个都是本脚本的产物，必须排除，否则算出的指纹会随产物变化而自激
+      acc.push(path.relative(base, p).split(path.sep).join('/'));
+    }
   }
   return acc;
 }
@@ -44,6 +47,23 @@ function main() {
   const id = h.digest('hex').slice(0, 32);
   fs.writeFileSync(OUT, id, 'utf8');
   console.log(`[base-id] ${id}（${rels.length} 个文件） -> ${path.relative(ROOT, OUT)}`);
+
+  // 同时记录「基线自带的模组」清单：运行期据此区分**内置模组**与**用户自装模组**。
+  // 不能用「排除 create」这种硬编码 —— 基线里其实还有 create_connected，会被误判成用户模组。
+  const modsDir = path.join(EDITOR, 'import', 'mods');
+  const baked = fs.existsSync(modsDir)
+    ? fs
+        .readdirSync(modsDir)
+        .filter((f) => f.endsWith('.manifest.json'))
+        .map((f) => f.slice(0, -'.manifest.json'.length))
+        .sort()
+    : [];
+  fs.writeFileSync(
+    path.join(EDITOR, 'base-mods.txt'),
+    baked.map((m) => m + '\n').join(''),
+    'utf8'
+  );
+  console.log(`[base-mods] 基线自带 ${baked.length} 个模组：${baked.join(', ') || '(无)'}`);
 }
 
 main();
