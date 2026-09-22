@@ -169,35 +169,142 @@ impl Default for EditorState {
 }
 
 
-fn resolve_web_root(app: &AppHandle) -> Result<PathBuf, String> {
+/// 打包**基线**数据目录（`data/`）—— 随安装包分发，只读。
+///
+/// 打包后 `data/**` 的位置取决于它是「src-tauri 目录内」还是「目录外」资源：
+///   * 目录内资源 → `<resource>/data/...`
+///   * 目录外资源（glob 以 `../` 开头）→ 打包器统一加 `_up_` 前缀，落在 `<resource>/_up_/data/...`
+/// 所以两种布局都必须探测，并用哨兵文件确认目录真的可用（而不是恰好同名的空目录）。
+pub fn base_data_root(app: &AppHandle) -> Result<PathBuf, String> {
     let mut candidates: Vec<PathBuf> = Vec::new();
 
-    if let Ok(directory) = app
-        .path()
-        .resolve("data/editor/web", BaseDirectory::Resource)
-    {
+    if let Ok(directory) = app.path().resolve("data", BaseDirectory::Resource) {
         candidates.push(directory);
     }
     if let Ok(directory) = app.path().resource_dir() {
-        candidates.push(directory.join("data/editor/web"));
-        candidates.push(directory.join("_up_/data/editor/web"));
+        candidates.push(directory.join("data"));
+        candidates.push(directory.join("_up_/data"));
     }
-    candidates.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data/editor/web"));
+    candidates.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data"));
 
     for candidate in &candidates {
-        if candidate.join("index.html").is_file() {
+        if candidate.join("editor/web/index.html").is_file() {
             return Ok(candidate.clone());
         }
     }
 
     Err(format!(
-        "找不到投影编辑器的站点资源，已尝试：{}",
+        "找不到投影编辑器的数据目录（data/），已尝试：{}",
         candidates
             .iter()
             .map(|candidate| candidate.display().to_string())
             .collect::<Vec<_>>()
             .join("、")
     ))
+}
+
+/// **用户数据层**根目录（可写、升级保留）= `%APPDATA%/mcSchematic/data`。
+///
+/// 与 `db_control`、`files.rs` 用的是同一个基目录（`app_data_dir()/data`），
+/// 只是多放一个 `editor/` 子树。模组与编辑器覆盖层全部写这里、不再写安装目录 ——
+/// 既避免「升级重装丢用户模组」，也让只读挂载（如 Linux AppImage）下能正常工作，
+/// 并且不再要求安装目录可写。
+pub fn user_data_root(app: &AppHandle) -> Result<PathBuf, String> {
+    app.path()
+        .app_data_dir()
+        .map(|dir| dir.join("data"))
+        .map_err(|e| format!("无法获取用户数据目录：{e}"))
+}
+
+/// 递归复制（覆盖同名文件；**不删除**目标里多出来的文件 —— 用户模组缓存因此得以保留）。
+fn copy_tree(src: &Path, dst: &Path) -> std::io::Result<()> {
+    if !src.is_dir() {
+        return Ok(());
+    }
+    fs::create_dir_all(dst)?;
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let from = entry.path();
+        let to = dst.join(entry.file_name());
+        if entry.file_type()?.is_dir() {
+            copy_tree(&from, &to)?;
+        } else {
+            fs::copy(&from, &to)?;
+        }
+    }
+    Ok(())
+}
+
+fn read_base_id(dir: &Path) -> String {
+    fs::read_to_string(dir.join("base-id.txt"))
+        .unwrap_or_default()
+        .trim()
+        .to_string()
+}
+
+/// 用户层里是否存在「非内置」的模组清单 —— 用于决定播种后是否需要重套用。
+///
+/// 内置的 `create` 已随基线应用过，不算；其余都要重放一遍才能回到 DB/图集里。
+fn has_user_mods(user_editor: &Path) -> bool {
+    let Ok(entries) = fs::read_dir(user_editor.join("import/mods")) else {
+        return false;
+    };
+    entries.flatten().any(|entry| {
+        let name = entry.file_name().to_string_lossy().to_string();
+        name.ends_with(".manifest.json") && name != "create.manifest.json"
+    })
+}
+
+/// 确保用户数据层可用：首启从基线**播种**；基线镜像指纹变化时**刷新**并后台重套用已启用模组。
+///
+/// 启动期调用一次即可（见 `lib.rs` 的 `setup`）。失败不致命，返回错误交给调用方记日志。
+pub fn ensure_user_data(app: &AppHandle) -> Result<PathBuf, String> {
+    let base = base_data_root(app)?;
+    let user = user_data_root(app)?;
+    let base_editor = base.join("editor");
+    let user_editor = user.join("editor");
+
+    if !user_editor.join("web/index.html").is_file() {
+        // 首次运行：整棵 editor/ 播种到用户层（含 base-id.txt）
+        copy_tree(&base_editor, &user_editor).map_err(|e| {
+            format!(
+                "播种编辑器数据到用户目录失败（{}）：{e}",
+                user_editor.display()
+            )
+        })?;
+        // 过渡场景：旧版把模组写在安装目录。NSIS/wiX 卸载只删「清单内」文件，
+        // 删不到用户自装的 import/mods/<modid>，于是升级后它们仍在基线里 → 已被播种进用户层。
+        // 但方块尚未进 DB/图集，这里补一次重套用把它们恢复回来。
+        if has_user_mods(&user_editor) {
+            mods::reapply_installed_mods(app);
+        }
+        return Ok(user);
+    }
+
+    // 已播种：仅当基线镜像指纹变化时才刷新。
+    // 若每次小版本升级都刷新，会白拷 51MB/8700 文件、并把模组的网页覆盖层重置掉。
+    let base_id = read_base_id(&base_editor);
+    let user_id = read_base_id(&user_editor);
+    if !base_id.is_empty() && base_id != user_id {
+        copy_tree(&base_editor, &user_editor).map_err(|e| format!("刷新编辑器镜像失败：{e}"))?;
+        // 刷新会覆盖用户模组的网页覆盖层，但 import/mods 缓存仍在 → 后台重套用（不阻塞启动）
+        mods::reapply_installed_mods(app);
+    }
+    Ok(user)
+}
+
+/// 编辑器数据目录（读写）：优先**用户层**；用户层尚未播种时退回基线（只读兜底）。
+pub fn resolve_data_root(app: &AppHandle) -> Result<PathBuf, String> {
+    if let Ok(user) = user_data_root(app) {
+        if user.join("editor/web/index.html").is_file() {
+            return Ok(user);
+        }
+    }
+    base_data_root(app)
+}
+
+fn resolve_web_root(app: &AppHandle) -> Result<PathBuf, String> {
+    resolve_data_root(app).map(|root| root.join("editor/web"))
 }
 
 
@@ -309,7 +416,7 @@ fn projection_url(app: &AppHandle, state: &EditorState, id: i64) -> Result<Strin
 
 #[cfg(test)]
 mod tests {
-    use super::write_schematic_file;
+    use super::{copy_tree, read_base_id, write_schematic_file};
     use std::fs;
 
     
@@ -344,5 +451,41 @@ mod tests {
         assert_eq!(fs::read(&fresh).expect("读新文件"), b"brand-new");
 
         let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn seeding_overwrites_base_files_but_keeps_user_mods() {
+        let root = std::env::temp_dir().join(format!("mcstools-seed-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        let base = root.join("base/editor");
+        let user = root.join("user/editor");
+
+        fs::create_dir_all(base.join("web")).expect("建基线");
+        fs::write(base.join("web/index.html"), b"base-index").expect("写基线页");
+        fs::write(base.join("base-id.txt"), b"v2").expect("写基线指纹");
+
+        // 用户层：一个自定义模组缓存（基线里没有）+ 一份被模组改过的 index
+        fs::create_dir_all(user.join("import/mods/mymod")).expect("建用户模组");
+        fs::write(user.join("import/mods/mymod/cache.bin"), b"user-cache").expect("写用户缓存");
+        fs::create_dir_all(user.join("web")).expect("建用户 web");
+        fs::write(user.join("web/index.html"), b"modified-by-mod").expect("写被改页");
+        fs::write(user.join("base-id.txt"), b"v1").expect("写旧指纹");
+
+        // 模拟「指纹变化 → 刷新」：整棵 editor 覆盖过去
+        copy_tree(&base, &user).expect("刷新复制");
+
+        assert_eq!(
+            fs::read(user.join("web/index.html")).expect("读 index"),
+            b"base-index",
+            "基线文件必须被覆盖回最新"
+        );
+        assert_eq!(
+            fs::read(user.join("import/mods/mymod/cache.bin")).expect("读用户缓存"),
+            b"user-cache",
+            "用户模组缓存不能被删（刷新是覆盖式、不删多余文件）"
+        );
+        assert_eq!(read_base_id(&user), "v2", "指纹要跟进基线，下轮不再重复刷新");
+
+        let _ = fs::remove_dir_all(&root);
     }
 }

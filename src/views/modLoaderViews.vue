@@ -163,31 +163,41 @@ const refreshAll = async () => {
 }
 
 const onToggle = async (mod: InstalledMod) => {
-  const want = mod.enabled
+  const wasEnabled = mod.enabled
   // 先乐观更新，失败回滚
-  mod.enabled = !want
+  mod.enabled = !wasEnabled
   try {
-    if (want) {
+    if (wasEnabled) {
       await invoke<any>('disable_mod_pack', { modid: mod.modid })
       toast.info(`已禁用 ${mod.modid}`)
     } else {
       await invoke<any>('enable_mod_pack', { modid: mod.modid })
       toast.info(`已启用 ${mod.modid}`)
     }
-    mod.enabled = want
+    // 保持乐观值即可；这里**不能**写回 wasEnabled，否则开关会立刻弹回原状态
   } catch (e) {
-    mod.enabled = !want
+    mod.enabled = wasEnabled
     toast.error(`操作失败：${e}`)
   }
 }
 
-const uninstall = async (mod: InstalledMod) => {
+// 卸载不可逆（方块 + 图集占用 + 缓存全删），先弹确认框再执行
+const uninstallTarget = ref<InstalledMod | null>(null)
+const uninstalling = ref(false)
+
+const confirmUninstall = async () => {
+  const mod = uninstallTarget.value
+  if (!mod) return
+  uninstalling.value = true
   try {
     await invoke<any>('uninstall_mod_pack', { modid: mod.modid })
     toast.success(`已卸载 ${mod.modid}`)
+    uninstallTarget.value = null
     await refresh()
   } catch (e) {
     toast.error(`卸载失败：${e}`)
+  } finally {
+    uninstalling.value = false
   }
 }
 
@@ -317,7 +327,7 @@ onBeforeRouteLeave(navigationGuard)
                     :loading="!!refreshing[m.modid]"
                     @click="refreshMod(m)"
                   />
-                  <v-btn icon="mdi-delete-outline" variant="text" color="error" size="small" :title="t('modloader.uninstall')" @click="uninstall(m)" />
+                  <v-btn icon="mdi-delete-outline" variant="text" color="error" size="small" :title="t('modloader.uninstall')" @click="uninstallTarget = m" />
                 </template>
               </v-list-item>
             </v-list>
@@ -332,6 +342,30 @@ onBeforeRouteLeave(navigationGuard)
         </v-card>
       </v-col>
     </v-row>
+
+    <!-- 卸载确认：卸载会连缓存一起删掉，误点后必须重新解包 jar（很慢），所以先确认 -->
+    <v-dialog :model-value="!!uninstallTarget" max-width="450" persistent @update:model-value="uninstallTarget = null">
+      <v-card :style="{ '--surface-alpha': opacity }">
+        <v-card-title class="d-flex align-center ga-2">
+          <v-icon color="error" icon="mdi-alert-circle"></v-icon>
+          {{ t('modloader.uninstallDialog.title') }}
+        </v-card-title>
+        <v-card-text>
+          {{ t('modloader.uninstallDialog.message', { name: uninstallTarget?.modid || '' }) }}
+          <br>
+          <span class="text-caption text-grey">{{ t('modloader.uninstallDialog.hint') }}</span>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn variant="text" :disabled="uninstalling" @click="uninstallTarget = null">
+            {{ t('modloader.uninstallDialog.cancel') }}
+          </v-btn>
+          <v-btn color="error" variant="tonal" :loading="uninstalling" @click="confirmUninstall">
+            {{ t('modloader.uninstallDialog.confirm') }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 

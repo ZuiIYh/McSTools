@@ -29,10 +29,9 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { MCMETA_DIR } from './mod-shared.mjs';
+import { EDITOR_WEB_DIR, MCMETA_DIR } from './mod-shared.mjs';
 
-const WEB = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'src-tauri', 'data', 'editor', 'web');
+const WEB = EDITOR_WEB_DIR;
 const CHUNKS = path.join(WEB, '_next', 'static', 'chunks');
 const MARK = '/*modns*/';
 

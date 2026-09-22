@@ -6,7 +6,7 @@
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "pnpm build",
+    "beforeBuildCommand": "pnpm build && node scripts/fetch-node.mjs && node scripts/stamp-base-id.mjs",
     "frontendDist": "../dist"
   },
   "app": {
@@ -69,6 +69,7 @@
     "createUpdaterArtifacts": true,
     "resources": [
       "data/**/*",
+      "binaries/**/*",
       "../scripts/**/*",
       "../dist/**/*"
     ],

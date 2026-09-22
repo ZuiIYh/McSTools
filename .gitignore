@@ -13,6 +13,11 @@ dist-ssr
 *.local
 .tmp/
 
+# 构建期生成物：内置 Node 运行时（由 scripts/fetch-node.mjs 抓取）
+src-tauri/binaries/
+# 构建期生成物：编辑器镜像内容指纹（由 scripts/stamp-base-id.mjs 生成）
+src-tauri/data/editor/base-id.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

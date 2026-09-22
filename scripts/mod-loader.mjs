@@ -5,18 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { applyRenderForMod, formatRenderLine } from './mod-apply-render.mjs';
 import { encodePng } from './png.mjs';
 import { extractZipSelective, MOD_ASSET_RE } from './zip.mjs';
-import { crossModParentKey } from './mod-shared.mjs';
+import { BLOCK_MODELS, BLOCK_TEXTURES_DIR, DB_PATH, FACE_PATH, IMAGES_DIR, IMPORT_DIR, crossModParentKey } from './mod-shared.mjs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT = path.resolve(__dirname, '..');
-const BLOCKID = path.join(ROOT, 'src-tauri', 'data', 'editor', 'web', 'uploads', 'buildings', 'blockID');
-const DB_PATH = path.join(BLOCKID, 'minecraft_blocks_database.json');
-const FACE_PATH = path.join(BLOCKID, 'block-face-textures.json');
-const IMAGES_DIR = path.join(BLOCKID, 'images');
-// 3D 面贴图目录，必须与 images/ 同步，否则 3D 渲染取不到贴图会变粉色
-const BLOCK_TEXTURES_DIR = path.join(BLOCKID, 'block-textures');
-const IMPORT_DIR = path.join(ROOT, 'src-tauri', 'data', 'editor', 'import', 'mods');
 // 隐形技术方块（copycat_panel / crushing_wheel_controller / fake_track / water_wheel_structure 等）
 // 没有任何可解析贴图，共用一个 16×16 全透明图标，避免它们只能拿到洋红兜底。
 const AIR_ICON = 'mod_air.png';
@@ -97,7 +87,7 @@ function collectModels(bs) {
 //      （`block/piston_side` → minecraft，不是 create）
 //   2) `#变量` 要先沿 textures 表解引用（窗格的 `particle:"#pane"` 曾直接去找 `#pane.png`）
 //   3) 只挑 all/side/top/bottom/particle/first 一个键，而齿轮/管道的贴图键是 `0`/`1_2`/`3` 这类
-const EDITOR_MODELS_PATH = path.join(BLOCKID, 'mcmeta', 'block-models.json');
+const EDITOR_MODELS_PATH = BLOCK_MODELS;
 let _editorModels = null;
 function editorModels() {
   if (_editorModels) return _editorModels;

@@ -61,6 +61,12 @@ pub fn run() {
             app.manage(je_blocks);
             let map_arts = MapArtsData::new(app.handle())?;
             app.manage(map_arts);
+            // 编辑器数据改放用户数据目录（可写、升级保留）：首启从包内基线播种，
+            // 镜像指纹变化时刷新并后台重套用已启用模组。失败不阻断启动 ——
+            // 用户层未就绪时 resolve_data_root 会退回只读基线。
+            if let Err(error) = editor::ensure_user_data(app.handle()) {
+                eprintln!("[editor] 初始化用户数据目录失败：{error}");
+            }
             app.manage(editor::EditorState::new());
             Ok(())
         })

@@ -5,8 +5,45 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const ROOT = path.resolve(__dirname, '..');
-const BLOCKID = path.join(ROOT, 'src-tauri', 'data', 'editor', 'web', 'uploads', 'buildings', 'blockID');
+
+/**
+ * 定位编辑器「数据目录」（即 `data/`）—— 本文件是**唯一真源**，其余 mod-*.mjs 必须复用这里的导出，
+ * 不要再各自 `path.resolve(__dirname,'..')` 拼一遍。
+ *
+ * 为什么不能直接拼 `ROOT/src-tauri/data`：那套路径只在**仓库里**成立。
+ * 打包后 Tauri 把 `../scripts/**`（src-tauri 之外的资源）放进 `<安装目录>/_up_/scripts/`，
+ * 于是 `resolve(__dirname,'..')` = `<安装目录>/_up_`，再拼 `src-tauri/data`
+ * 指向一个根本不存在的目录 —— 表现为面板报「找不到装载器脚本」之后紧接着的所有操作全废。
+ *
+ * 解析顺序（每个候选都用哨兵 `<data>/editor/web/index.html` 校验，防止选中同名的空目录）：
+ *   1. 环境变量 `MCSTOOLS_DATA_ROOT`：Rust 侧用 Tauri 的路径解析器算好后注入，最可靠；
+ *   2. 仓库布局：`<repo>/scripts` → `<repo>/src-tauri/data`；
+ *   3. 打包布局：`<install>/_up_/scripts` → `<install>/data`；
+ *   4. 兜底：脚本目录与 `data/` 同级。
+ */
+function resolveDataRoot() {
+  const raw = [
+    process.env.MCSTOOLS_DATA_ROOT,
+    path.resolve(__dirname, '..', 'src-tauri', 'data'), // 仓库布局
+    path.resolve(__dirname, '..', '..', 'data'),        // 打包布局（_up_/scripts）
+    path.resolve(__dirname, '..', 'data'),              // 兜底
+  ];
+  const candidates = raw.filter((c) => typeof c === 'string' && c.length > 0);
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(path.join(candidate, 'editor', 'web', 'index.html'))) return candidate;
+    } catch { /* 非法路径直接跳过 */ }
+  }
+  throw new Error(
+    '找不到编辑器数据目录（data/），已尝试：\n  ' + candidates.join('\n  ') +
+    '\n开发期请在仓库根目录运行；安装版请确认安装完整（卸载后重装）。'
+  );
+}
+
+export const DATA_ROOT = resolveDataRoot();
+/** 被 OfflineServer 当作站点根目录对外提供服务的那份 web 产物 */
+export const EDITOR_WEB_DIR = path.join(DATA_ROOT, 'editor', 'web');
+const BLOCKID = path.join(EDITOR_WEB_DIR, 'uploads', 'buildings', 'blockID');
 export const DB_PATH = path.join(BLOCKID, 'minecraft_blocks_database.json');
 export const FACE_PATH = path.join(BLOCKID, 'block-face-textures.json');
 export const IMAGES_DIR = path.join(BLOCKID, 'images');
@@ -27,7 +64,7 @@ export const ATLAS_REGISTRY = path.join(MCMETA_DIR, '.mod-atlas.json');
 // 模组方块渲染提示表（是否整块 / 需透明 / 需挖空），由 patch-editor-render.mjs 内联进渲染器。
 // 编辑器把这三类判定硬编码成原版方块名后缀表，模组方块不在表里 → 玻璃贴图发黑、非整块被当整块剔除面。
 export const RENDER_HINTS = path.join(MCMETA_DIR, 'mod-render-hints.json');
-export const IMPORT_DIR = path.join(ROOT, 'src-tauri', 'data', 'editor', 'import', 'mods');
+export const IMPORT_DIR = path.join(DATA_ROOT, 'editor', 'import', 'mods');
 
 // ---------------- 模型键名规则（唯一真源） ----------------
 // 模组模型移植进编辑器 block-models.json 后的键名。mod-models 的 modelKeyFor 就是它，

@@ -5,6 +5,17 @@ on:
     tags:
       - "v*"
   workflow_dispatch:
+    inputs:
+      debug:
+        description: "先完整跑一遍打包并把日志传到公开 release ci-logs（排障用，会多花约一倍打包时间）"
+        type: boolean
+        default: false
+
+# 同一个 tag 被反复 force-push 时，自动取消上一个仍在跑的 run：
+# 避免矩阵三平台互相覆盖产物、也不再白烧算力（以前会留下 completed cancelled 的 run）。
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   release:
@@ -13,36 +24,57 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: ['windows-latest', 'macos-latest','ubuntu-22.04']
+        platform: ['windows-latest', 'macos-latest', 'ubuntu-22.04']
 
     runs-on: ${{ matrix.platform }}
+    timeout-minutes: 90
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Rust setup
         uses: dtolnay/rust-toolchain@stable
-      
+
+      # 复用上一轮的 cargo 依赖与 target 产物，冷启动编译时间大幅下降
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "src-tauri -> target"
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 11.23.0
           run_install: false
+
       - name: Sync node version and setup cache
         uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "pnpm"
+
+      # 缓存内置 Node 运行时（fetch-node.mjs 下载的 ~30MB 归档解出的 node），
+      # key 跟着脚本内容变，改了下载逻辑就自动失效。
+      - name: Cache bundled Node runtime
+        uses: actions/cache@v4
+        with:
+          path: ~/.tauri/mcstools-node
+          key: node-runtime-${{ runner.os }}-${{ hashFiles('scripts/fetch-node.mjs') }}
+
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
-      # 诊断用：先自己跑一遍完整打包并留日志（cargo 已缓存，第二次几乎瞬时），
-      # 失败时把日志挂到公开 release `ci-logs`，便于无仓库权限也能读到真实报错。
-      - name: Preflight build (capture log)
-        id: preflight
+
+      # 诊断用（仅手动 dispatch 且勾选 debug 时执行）：先自己完整跑一遍打包并留日志。
+      # 正常 tag 推送**不再**跑这一步 —— 它会和下面的 tauri-action 重复构建，白烧一倍时间。
+      # 出错时：Actions → Run workflow → 勾 debug，失败日志会挂到公开 release `ci-logs`。
+      - name: Preflight build (debug only, capture log)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug == true }}
         continue-on-error: true
         shell: bash
         env:
@@ -51,8 +83,9 @@ jobs:
         run: |
           pnpm tauri build --verbose 2>&1 | tee ci-build.log
           exit ${PIPESTATUS[0]}
-      - name: Upload build log (always)
-        if: always()
+
+      - name: Upload build log (debug only)
+        if: ${{ always() && github.event_name == 'workflow_dispatch' && inputs.debug == true }}
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -62,6 +95,7 @@ jobs:
             gh release view ci-logs >/dev/null 2>&1 || gh release create ci-logs --title "CI build logs" --notes "调试用日志"
             gh release upload ci-logs ci-build-tail.log --clobber
           fi
+
       - name: Build the app
         id: build
         uses: tauri-apps/tauri-action@v0
@@ -81,4 +115,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # 运行自己的脚本
         run: node scripts/updater.mjs
-        

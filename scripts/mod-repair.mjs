@@ -3,15 +3,7 @@
 // 用于在历史 mod-loader（未写 entries/缓存）已 apply 的模组上启用 enable/disable 能力。
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const ROOT = path.resolve(__dirname, '..');
-const BLOCKID = path.join(ROOT, 'src-tauri', 'data', 'editor', 'web', 'uploads', 'buildings', 'blockID');
-const DB_PATH = path.join(BLOCKID, 'minecraft_blocks_database.json');
-const IMAGES_DIR = path.join(BLOCKID, 'images');
-const IMPORT_DIR = path.join(ROOT, 'src-tauri', 'data', 'editor', 'import', 'mods');
+import { DB_PATH, IMAGES_DIR, IMPORT_DIR } from './mod-shared.mjs';
 
 const modid = process.argv[2];
 if (!modid) { console.error('usage: mod-repair.mjs <modid>'); process.exit(2); }

@@ -32,9 +32,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { RENDER_HINTS } from './mod-shared.mjs';
+import { EDITOR_WEB_DIR, RENDER_HINTS } from './mod-shared.mjs';
 
-const WEB = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'src-tauri', 'data', 'editor', 'web');
+// 用 mod-shared 解析出的 web 目录，而不是自己按仓库布局拼 ——
+// 这个补丁会在「安装/启用/禁用」时被 mod-render-hints.mjs 调到（applyRenderPatch），
+// 打包后脚本位于 `<安装目录>/_up_/scripts`，自拼 `../src-tauri/data/editor/web` 必然落空。
+const WEB = EDITOR_WEB_DIR;
 const CHUNKS = path.join(WEB, '_next', 'static', 'chunks');
 
 const MARK_S = '/*modrh-start*/';

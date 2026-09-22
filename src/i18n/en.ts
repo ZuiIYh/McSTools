@@ -747,6 +747,14 @@ export default {
     risk: '{n} magenta risk',
     noInstalled: 'No mods installed yet. Pick a mod file to get started.',
     compatNote: 'Mod compatibility is still being optimized; initial performance is low.',
-    note: 'Uninstall removes blocks and cache completely; disable only hides them and can be re-enabled anytime. Enabled mods auto-reload after the editor mirror is replaced.'
+    note: 'Uninstall removes blocks and cache completely; disable only hides them and can be re-enabled anytime. Enabled mods auto-reload after the editor mirror is replaced.',
+    previewFailed: 'Could not import this file',
+    uninstallDialog: {
+      title: 'Uninstall mod',
+      message: 'Uninstall {name}?',
+      hint: 'Its blocks, atlas entries and cached assets will be removed completely. You will need to pick the jar file again to restore it.',
+      cancel: 'Cancel',
+      confirm: 'Uninstall'
+    }
   }
 }
