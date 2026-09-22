@@ -7,6 +7,25 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
+ * 判断「本模块是否作为入口被 node 直接执行」（CLI 入口判定）。**唯一真源**，各脚本一律用它。
+ *
+ * ★ 为什么不用朴素的 `path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)`：
+ *   Windows 上 Tauri 的 `resource_dir()` / `current_exe()` 会给出 **verbatim 路径**（`\\?\D:\...`）。
+ *   这种路径下两个值不再相等（前缀/分隔符/大小写都可能不同），于是 isMain 判 false →
+ *   脚本被当作「被 import」而**什么都不执行，exit 0 且 stdout 为空** →
+ *   上层只看到「装载器脚本未返回 RESULT_JSON」，表现为「读不出已装模组、无法解析导入」。
+ *   （已在真机复现：verbatim 形式下跑 mod-list.mjs 正是 status=0 + stdout 空。）
+ *   这里统一处理：抹掉 `\\?\` 前缀 → 分隔符归一为 `/` → 忽略大小写。
+ */
+export function isMainModule(importMetaUrl) {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  const normalize = (p) =>
+    path.resolve(p).replace(/^\\\\\?\\/, '').replace(/\\/g, '/').toLowerCase();
+  return normalize(entry) === normalize(fileURLToPath(importMetaUrl));
+}
+
+/**
  * 定位编辑器「数据目录」（即 `data/`）—— 本文件是**唯一真源**，其余 mod-*.mjs 必须复用这里的导出，
  * 不要再各自 `path.resolve(__dirname,'..')` 拼一遍。
  *

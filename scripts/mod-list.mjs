@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { IMPORT_DIR } from './mod-shared.mjs';
+import { IMPORT_DIR, isMainModule } from './mod-shared.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,7 +37,7 @@ function list() {
   return out;
 }
 
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === __filename;
+const isMain = isMainModule(import.meta.url);
 if (isMain) {
   const mods = list();
   console.log(`已装载模组 ${mods.length} 个`);

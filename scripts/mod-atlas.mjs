@@ -27,9 +27,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decodePng, encodePng, resizeNearest } from './png.mjs';
-import {
-  MCMETA_DIR, ATLAS_PNG, ATLAS_UV, BLOCK_MODELS, BLOCK_DEFS, BLOCK_PROPS, ATLAS_REGISTRY, IMPORT_DIR,
-} from './mod-shared.mjs';
+import { MCMETA_DIR, ATLAS_PNG, ATLAS_UV, BLOCK_MODELS, BLOCK_DEFS, BLOCK_PROPS, ATLAS_REGISTRY, IMPORT_DIR, isMainModule } from './mod-shared.mjs';
 
 export const TILE = 16;
 // 内容带高度上限。UV = 像素 / pow2(实际图片高)，增高只会让 H 2048→4096 并整体重算 UV，
@@ -397,7 +395,7 @@ export function restoreBaseline() {
 }
 
 // ---------------- CLI ----------------
-const isMain = process.argv[1] && fileURLToPath(import.meta.url).toLowerCase() === path.resolve(process.argv[1]).toLowerCase();
+const isMain = isMainModule(import.meta.url);
 if (isMain) {
   const argv = process.argv.slice(2);
   const args = { modid: null, revert: false, dryRun: false, info: false, restore: false, jar: null };

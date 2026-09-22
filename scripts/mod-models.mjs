@@ -24,10 +24,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { decodePng, encodePng, resizeNearest } from './png.mjs';
 import { bakeObjGeometry } from './mod-obj.mjs';
-import {
-  MCMETA_DIR, ATLAS_PNG, ATLAS_UV, BLOCK_MODELS, BLOCK_DEFS, BLOCK_PROPS, ATLAS_REGISTRY, IMPORT_DIR,
-  modelKeyFor, crossModParentKey, deriveDefaultProps,
-} from './mod-shared.mjs';
+import { MCMETA_DIR, ATLAS_PNG, ATLAS_UV, BLOCK_MODELS, BLOCK_DEFS, BLOCK_PROPS, ATLAS_REGISTRY, IMPORT_DIR,
+  modelKeyFor, crossModParentKey, deriveDefaultProps, isMainModule } from './mod-shared.mjs';
 
 export const TILE = 16;
 // 模组贴图内容带（baseBottom 以下）的高度上限。
@@ -1379,7 +1377,7 @@ export function revertModModels(modid, opts = {}) {
 }
 
 // ---------------- CLI ----------------
-const isMain = process.argv[1] && fileURLToPath(import.meta.url).toLowerCase() === path.resolve(process.argv[1]).toLowerCase();
+const isMain = isMainModule(import.meta.url);
 if (isMain) {
   const argv = process.argv.slice(2);
   const args = { modid: null, revert: false, dryRun: false, ns: null };

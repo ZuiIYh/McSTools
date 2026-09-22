@@ -35,7 +35,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MCMETA_DIR, ATLAS_PNG, ATLAS_UV, BLOCK_MODELS, BLOCK_DEFS, RENDER_HINTS } from './mod-shared.mjs';
+import { MCMETA_DIR, ATLAS_PNG, ATLAS_UV, BLOCK_MODELS, BLOCK_DEFS, RENDER_HINTS, isMainModule } from './mod-shared.mjs';
 import { decodePng } from './png.mjs';
 import { applyRenderPatch } from './patch-editor-render.mjs';
 
@@ -244,7 +244,7 @@ export function syncRenderHints(opts = {}) {
   return { ok: true, stats, atlas, patch, dryRun: !!opts.dryRun };
 }
 
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const isMain = isMainModule(import.meta.url);
 if (isMain) {
   const dryRun = process.argv.includes('--dry-run');
   const noPatch = process.argv.includes('--no-patch');

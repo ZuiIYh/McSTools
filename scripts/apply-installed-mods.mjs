@@ -1,7 +1,7 @@
 // apply-installed-mods.mjs
 // 换镜像（restore-mirror 整包覆盖）后，重灌所有已启用的模组方块。
 // 不依赖 jar：直接从 import/mods/<modid>/ 缓存恢复 PNG 与 DB 条目 + 重新注入 3D 图集/模型。
-import { IMPORT_DIR } from './mod-shared.mjs';
+import { IMPORT_DIR, isMainModule } from './mod-shared.mjs';
 import { enableMod } from './mod-enable.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -26,7 +26,7 @@ export async function applyInstalledMods() {
   return { applied, missing };
 }
 
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const isMain = isMainModule(import.meta.url);
 if (isMain) {
   applyInstalledMods().then((r) => {
     console.log(`apply-installed-mods: applied=${r.applied}` + (r.missing.length ? ', missing=' + r.missing.join('; ') : ''));

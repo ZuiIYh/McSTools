@@ -1,7 +1,7 @@
 // mod-enable.mjs <modid> [--dry-run]
 // 启用模组：将缓存 PNG 拷回 images/，并把 manifest.entries 原样放回 DB/face。
 // 无需重新解析 jar，秒级完成。核心逻辑抽为 enableMod() 供 apply-installed-mods 复用。
-import { DB_PATH, FACE_PATH, IMAGES_DIR, BLOCK_TEXTURES_DIR, IMPORT_DIR, loadDb, saveDb, loadFace, saveFace, readManifest, existingIds } from './mod-shared.mjs';
+import { DB_PATH, FACE_PATH, IMAGES_DIR, BLOCK_TEXTURES_DIR, IMPORT_DIR, loadDb, saveDb, loadFace, saveFace, readManifest, existingIds, isMainModule } from './mod-shared.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -77,7 +77,7 @@ export async function enableMod(modid, dryRun = false, opts = {}) {
   };
 }
 
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const isMain = isMainModule(import.meta.url);
 if (isMain) {
   const modid = process.argv[2];
   const dryRun = process.argv.includes('--dry-run');

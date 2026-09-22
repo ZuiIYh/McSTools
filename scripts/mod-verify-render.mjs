@@ -21,7 +21,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MCMETA_DIR } from './mod-shared.mjs';
+import { MCMETA_DIR, isMainModule } from './mod-shared.mjs';
 
 const J = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
 const ns = (t) => { const s = String(t || '').trim(); return s.includes(':') ? s : 'minecraft:' + s; };
@@ -116,7 +116,7 @@ export function verifyRender(modid) {
 }
 
 // ---------------- CLI ----------------
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const isMain = isMainModule(import.meta.url);
 if (isMain) {
   const args = process.argv.slice(2);
   const asJson = args.includes('--json');

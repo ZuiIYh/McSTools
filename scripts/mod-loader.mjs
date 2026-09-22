@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { applyRenderForMod, formatRenderLine } from './mod-apply-render.mjs';
 import { encodePng } from './png.mjs';
 import { extractZipSelective, MOD_ASSET_RE } from './zip.mjs';
-import { BLOCK_MODELS, BLOCK_TEXTURES_DIR, DB_PATH, FACE_PATH, IMAGES_DIR, IMPORT_DIR, crossModParentKey } from './mod-shared.mjs';
+import { BLOCK_MODELS, BLOCK_TEXTURES_DIR, DB_PATH, FACE_PATH, IMAGES_DIR, IMPORT_DIR, crossModParentKey, isMainModule } from './mod-shared.mjs';
 
 // 隐形技术方块（copycat_panel / crushing_wheel_controller / fake_track / water_wheel_structure 等）
 // 没有任何可解析贴图，共用一个 16×16 全透明图标，避免它们只能拿到洋红兜底。
@@ -400,7 +400,7 @@ function applyMod(result, args, extractedDir = null) {
 }
 
 // 作为库被 mod-atlas.mjs import 时不执行 CLI
-const isMain = process.argv[1] && fileURLToPath(import.meta.url).toLowerCase() === path.resolve(process.argv[1]).toLowerCase();
+const isMain = isMainModule(import.meta.url);
 if (isMain) main();
 
 function main() {

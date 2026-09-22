@@ -32,7 +32,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { EDITOR_WEB_DIR, RENDER_HINTS } from './mod-shared.mjs';
+import { EDITOR_WEB_DIR, RENDER_HINTS, isMainModule } from './mod-shared.mjs';
 
 // 用 mod-shared 解析出的 web 目录，而不是自己按仓库布局拼 ——
 // 这个补丁会在「安装/启用/禁用」时被 mod-render-hints.mjs 调到（applyRenderPatch），
@@ -142,7 +142,7 @@ export function applyRenderPatch() {
   return { ok: true, file: path.relative(WEB, target.file), hintBlocks: wantCount, changed };
 }
 
-const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+const isMain = isMainModule(import.meta.url);
 if (isMain) {
   const argv = process.argv.slice(2);
   const apply = argv.includes('--apply');
