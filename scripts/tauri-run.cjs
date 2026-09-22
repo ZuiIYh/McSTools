@@ -18,6 +18,11 @@ if (args[0] === '--') args.shift();
  * 本地更新器签名私钥（可选）。
  * 优先使用环境变量；否则读 ~/.tauri/mcstools.key（配套密码放 ~/.tauri/mcstools.key.password）。
  * 私钥只留在用户目录、绝不进仓库；缺失时保持原行为（打包照常，仅报“缺私钥”）。
+ *
+ * 注意：~/.tauri/mcstools.key 的内容是「双层 base64」编码，而 Tauri 的 TAURI_SIGNING_PRIVATE_KEY
+ * 正是期望这种编码（Tauri 会自行 base64 解码得到 `untrusted comment: ...` + 内层 base64 两行文本）。
+ * 因此这里必须把文件内容**原样**透传，绝不能再次解码，否则会变成两行明文导致 `Missing comment/
+ * Invalid symbol` 报错。CI 的 TAURI_PRIVATE_KEY secret 也必须填这份双层 base64 原文。
  */
 function attachSigningKey(target) {
   const keyPath = path.join(os.homedir(), '.tauri', 'mcstools.key');

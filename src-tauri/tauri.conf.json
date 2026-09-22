@@ -86,8 +86,8 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDUyQkIyMjVBQ0Y2NjZFMkIKUldRcmJtYlBXaUs3VWlHWVR1Wk1Yb3BOdGtwV0VjWFpJd0ExRmNNS1hiRE4vK3FiRThVbnJuRE0K",
       "endpoints": [
-        "https://github.com/guapi-exe/McSTools/releases/download/updater/latest.json",
-        "https://ghcr.mcschematic.top/https://github.com/guapi-exe/McSTools/releases/download/updater/latest.json"
+        "https://github.com/ZuiIYh/McSTools/releases/download/updater/latest.json",
+        "https://ghcr.mcschematic.top/https://github.com/ZuiIYh/McSTools/releases/download/updater/latest.json"
       ],
       "windows": {
         "installMode": "passive"
