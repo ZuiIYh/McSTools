@@ -23,23 +23,34 @@ if (!tag) {
 const ROOT = process.env.GITHUB_WORKSPACE || process.cwd();
 const BUNDLE_ROOT = path.resolve(ROOT, "src-tauri/target/release/bundle");
 
-// 同一平台可能产出多种格式（如 windows 同时有 nsis .exe 与 wix .msi），
-// latest.json 每个平台只能有一个入口，这里按优先级只挑一个写进更新清单。
-const EXT_PRIORITY = { ".exe": 0, ".appimage": 1, ".deb": 2, ".rpm": 3, ".msi": 4, ".dmg": 5 };
+// Tauri v2 各平台的更新器产物（带签名）命名约定：
+//   macOS  ：<name>.app.tar.gz        + <name>.app.tar.gz.sig   （.dmg 是全新安装包，无 .sig）
+//   Windows：<name>.exe / .msi        + <name>.exe.sig / .msi.sig
+//   Linux  ：<name>.AppImage          + <name>.AppImage.sig
+// 因此这里直接扫描 *.sig，去掉末尾 .sig 即为其对应的更新包文件。
+// 同一平台可能产出多种格式（windows 同时有 nsis .exe 与 wix .msi），
+// latest.json 每个平台只能有一个入口，按下面的优先级只挑一个写进更新清单。
+function priorityFor(filename) {
+  const l = filename.toLowerCase();
+  if (l.endsWith(".exe")) return 0; // nsis 安装包（静默更新体验较好）
+  if (l.endsWith(".msi")) return 1;
+  if (l.endsWith(".app.tar.gz")) return 2; // macOS 更新器只认 .app.tar.gz
+  if (l.endsWith(".appimage")) return 3; // Linux 更新器只认 .AppImage
+  return 99;
+}
 
 function platformKeyFor(filename) {
   const lower = filename.toLowerCase();
   let arch = "x86_64";
-  if (/_aarch64|arm64|_arm64/.test(lower)) arch = "aarch64";
-  else if (/_x64|_x86_64/.test(lower)) arch = "x86_64";
+  if (/aarch64/.test(lower) || /arm64/.test(lower)) arch = "aarch64";
   if (lower.endsWith(".msi") || lower.endsWith(".exe")) return `windows-${arch}`;
-  if (lower.endsWith(".dmg")) return `darwin-${arch}`;
-  if (lower.endsWith(".deb") || lower.endsWith(".appimage") || lower.endsWith(".rpm")) return `linux-${arch}`;
+  if (lower.endsWith(".app.tar.gz")) return `darwin-${arch}`;
+  if (lower.endsWith(".appimage")) return `linux-${arch}`;
   return null;
 }
 
 async function collectInstallers() {
-  const platforms = {}; // key -> { file, ext, sig }
+  const platforms = {}; // key -> { file, sig, prio }
   let entries;
   try {
     entries = await readdir(BUNDLE_ROOT, { withFileTypes: true });
@@ -57,32 +68,32 @@ async function collectInstallers() {
       continue;
     }
     for (const f of files) {
-      const lower = f.toLowerCase();
-      if (
-        !lower.endsWith(".msi") &&
-        !lower.endsWith(".exe") &&
-        !lower.endsWith(".dmg") &&
-        !lower.endsWith(".deb") &&
-        !lower.endsWith(".appimage") &&
-        !lower.endsWith(".rpm")
-      ) {
+      if (!f.toLowerCase().endsWith(".sig")) continue; // 只处理签名文件
+
+      // 签名文件去掉末尾 .sig 即为其对应更新包
+      const artifact = f.slice(0, -4);
+      const key = platformKeyFor(artifact);
+      if (!key) {
+        console.warn(`[skip] ${f}: 无法从文件名推断平台，跳过`);
         continue;
       }
-      const key = platformKeyFor(f);
-      if (!key) continue;
-      // 必须存在对应的 .sig 才能写入更新清单（否则客户端无法校验更新）
       let sig;
       try {
-        sig = (await readFile(path.join(sub, f + ".sig"), "utf8")).trim();
+        sig = (await readFile(path.join(sub, f), "utf8")).trim();
       } catch {
-        console.warn(`[skip] ${f} 缺少配套的 .sig，跳过（更新器无法校验）`);
+        console.warn(`[skip] ${f}: 读取签名失败，跳过`);
         continue;
       }
-      const ext = path.extname(lower);
-      const candidate = { file: f, ext, sig };
+      // 确认对应的更新包文件确实存在于同目录
+      // （.dmg / .app 目录不会带 .sig，天然被排除）
+      if (!files.includes(artifact)) {
+        console.warn(`[skip] ${f}: 对应更新包 ${artifact} 缺失，跳过`);
+        continue;
+      }
+      const prio = priorityFor(artifact);
       const prev = platforms[key];
-      if (!prev || (EXT_PRIORITY[ext] ?? 99) < (EXT_PRIORITY[prev.ext] ?? 99)) {
-        platforms[key] = candidate;
+      if (!prev || prio < prev.prio) {
+        platforms[key] = { file: artifact, sig, prio };
       }
     }
   }
