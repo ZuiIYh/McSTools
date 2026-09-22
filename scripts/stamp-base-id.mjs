@@ -27,7 +27,12 @@ function listFiles(dir, base = dir, acc = []) {
 }
 
 function main() {
-  if (!fs.existsSync(EDITOR)) { console.error(`[base-id] 找不到 ${EDITOR}`); process.exit(1); }
+  if (!fs.existsSync(EDITOR)) {
+    // 不要因为镜像缺失就让整个构建失败：这里只清掉可能残留的旧指纹（避免误判「未变化」）。
+    console.warn(`[base-id] 未找到 ${EDITOR}，跳过（本次构建不含编辑器镜像）`);
+    try { if (fs.existsSync(OUT)) fs.rmSync(OUT); } catch { /* 清不掉也无所谓 */ }
+    return;
+  }
   const rels = listFiles(EDITOR).sort();
   const h = crypto.createHash('sha256');
   for (const rel of rels) {

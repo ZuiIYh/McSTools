@@ -1,0 +1,5127 @@
+{
+  "create:acacia_window": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:acacia_window_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:adjustable_chain_gearshift": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:analog_lever": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_alloy_block": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_bars": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 88,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_belt_funnel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 43,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_casing": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_door": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_encased_cogwheel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_encased_large_cogwheel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 22,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_encased_shaft": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_funnel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 61,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_ladder": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 92,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_scaffolding": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 61,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:andesite_tunnel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:asurine": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:asurine_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:bamboo_window": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:bamboo_window_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:basin": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 20,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:belt": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:birch_window": {
+    "renderLayer": "blend",
+    "transparent": true,
+    "alphaPct": 0,
+    "blendPct": 47,
+    "tex": "create:block/palettes/birch_window"
+  },
+  "create:birch_window_pane": {
+    "renderLayer": "blend",
+    "fullCube": false,
+    "transparent": true,
+    "alphaPct": 0,
+    "blendPct": 47,
+    "tex": "create:block/palettes/birch_window"
+  },
+  "create:black_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:black_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:black_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:black_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:black_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 52,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:black_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:black_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:blaze_burner": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 59,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:blue_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:blue_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:blue_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:blue_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:blue_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:blue_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:blue_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:bound_cardboard_block": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brass_bars": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 88,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brass_belt_funnel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 43,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brass_block": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brass_casing": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brass_door": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brass_encased_cogwheel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brass_encased_large_cogwheel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 22,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brass_encased_shaft": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brass_funnel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 61,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brass_ladder": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 89,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brass_scaffolding": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brass_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 58,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brass_tunnel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": "create:block/tunnel/brass_tunnel"
+  },
+  "create:brown_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:brown_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brown_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brown_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brown_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brown_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:brown_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:calcite_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cardboard_block": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cart_assembler": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 44,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:chain_conveyor": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cherry_window": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 29,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cherry_window_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 29,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:chocolate": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:chute": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 48,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:clipboard": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 30,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:clockwork_bearing": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:clutch": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cogwheel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:content_observer": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:contraption_controls": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 41,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:controller_rail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 91,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:controls": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 26,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_backtank": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_bars": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 88,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_casing": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_door": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 21,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_ladder": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_scaffolding": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 55,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_shingle_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_shingle_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_shingles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 57,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_tile_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_tile_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_tiles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copper_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copycat_bars": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 55,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copycat_base": {
+    "renderLayer": "alpha",
+    "alphaTest": true,
+    "alphaPct": 28,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copycat_panel": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:copycat_step": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:creative_crate": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 21,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:creative_fluid_tank": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 89,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:creative_motor": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 75,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:crimsite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:crimsite_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:crimson_window": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:crimson_window_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:crushing_wheel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:crushing_wheel_controller": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cuckoo_clock": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 38,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_andesite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_andesite_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_andesite_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_andesite_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_andesite_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_andesite_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_andesite_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_andesite_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_asurine": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_asurine_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_asurine_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_asurine_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_asurine_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_asurine_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_asurine_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_asurine_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_calcite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_calcite_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_calcite_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_calcite_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_calcite_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_calcite_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_calcite_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_calcite_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_crimsite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_crimsite_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_crimsite_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_crimsite_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_crimsite_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_crimsite_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_crimsite_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_crimsite_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_deepslate": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_deepslate_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_deepslate_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_deepslate_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_deepslate_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_deepslate_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_deepslate_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_deepslate_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_diorite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_diorite_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_diorite_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_diorite_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_diorite_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_diorite_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_diorite_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_diorite_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_dripstone": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_dripstone_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_dripstone_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_dripstone_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_dripstone_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_dripstone_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_dripstone_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_dripstone_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_granite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_granite_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_granite_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_granite_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_granite_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_granite_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_granite_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_granite_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_limestone": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_limestone_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_limestone_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_limestone_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_limestone_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_limestone_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_limestone_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_limestone_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_ochrum": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_ochrum_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_ochrum_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_ochrum_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_ochrum_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_ochrum_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_ochrum_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_ochrum_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scorchia": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scorchia_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scorchia_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scorchia_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scorchia_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scorchia_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scorchia_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scorchia_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scoria": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scoria_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scoria_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scoria_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scoria_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scoria_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scoria_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_scoria_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_tuff": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_tuff_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_tuff_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_tuff_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_tuff_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_tuff_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_tuff_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_tuff_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_veridium": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_veridium_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_veridium_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_veridium_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_veridium_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_veridium_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_veridium_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cut_veridium_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cyan_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:cyan_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cyan_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cyan_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cyan_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cyan_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:cyan_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:dark_oak_window": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 36,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:dark_oak_window_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 36,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:deepslate_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:deepslate_zinc_ore": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:deployer": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:depot": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:desk_bell": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 61,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:diorite_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:display_board": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:display_link": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 38,
+    "blendPct": 5,
+    "tex": "create:block/link_details"
+  },
+  "create:dripstone_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:elevator_contact": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:elevator_pulley": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:encased_chain_drive": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:encased_fan": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:encased_fluid_pipe": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:experience_block": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:exposed_copper_shingle_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:exposed_copper_shingle_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:exposed_copper_shingles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:exposed_copper_tile_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:exposed_copper_tile_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:exposed_copper_tiles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:factory_gauge": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:fake_track": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:fluid_pipe": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:fluid_tank": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 88,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:fluid_valve": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 62,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:flywheel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 21,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:framed_glass": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 54,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:framed_glass_door": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 64,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:framed_glass_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 88,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:framed_glass_trapdoor": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 54,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:gantry_carriage": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 75,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:gantry_shaft": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:gearbox": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:gearshift": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:glass_fluid_pipe": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 41,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:granite_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:gray_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:gray_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:gray_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:gray_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:gray_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:gray_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:gray_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:green_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:green_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:green_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:green_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:green_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:green_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:green_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:hand_crank": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:haunted_bell": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 17,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:honey": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:horizontal_framed_glass": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 54,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:horizontal_framed_glass_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 88,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:hose_pulley": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 55,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:industrial_iron_block": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:industrial_iron_window": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:industrial_iron_window_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 88,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:item_drain": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 55,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:item_hatch": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 48,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:item_vault": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:jungle_window": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 28,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:jungle_window_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 28,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:large_bogey": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:large_cogwheel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:large_water_wheel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_andesite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_asurine": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_calcite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_crimsite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_deepslate": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_diorite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_dripstone": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_granite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_limestone": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_ochrum": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_scorchia": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_scoria": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_tuff": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:layered_veridium": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:lectern_controller": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:light_blue_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:light_blue_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:light_blue_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:light_blue_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:light_blue_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:light_blue_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:light_blue_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:light_gray_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:light_gray_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:light_gray_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:light_gray_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:light_gray_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:light_gray_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:light_gray_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:lime_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:lime_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:lime_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:lime_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:lime_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:lime_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:lime_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:limestone": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:limestone_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:linear_chassis": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:lit_blaze_burner": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 59,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:magenta_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:magenta_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:magenta_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:magenta_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:magenta_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:magenta_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:magenta_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mangrove_window": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 12,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mangrove_window_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 12,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mechanical_arm": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mechanical_bearing": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mechanical_crafter": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 21,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mechanical_drill": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mechanical_harvester": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mechanical_mixer": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mechanical_piston": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mechanical_piston_head": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mechanical_plough": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mechanical_press": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mechanical_pump": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 55,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mechanical_roller": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mechanical_saw": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:metal_bracket": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 17,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:metal_girder": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:metal_girder_encased_shaft": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 9,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:millstone": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 27,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:minecart_anchor": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:mysterious_cuckoo_clock": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 38,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:netherite_backtank": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:nozzle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 44,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:oak_window": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:oak_window_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:ochrum": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:ochrum_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:orange_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:orange_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:orange_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:orange_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:orange_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:orange_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 44,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:ornate_iron_window": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 30,
+    "blendPct": 1,
+    "tex": "create:block/palettes/ornate_iron_window"
+  },
+  "create:ornate_iron_window_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 88,
+    "blendPct": 1,
+    "tex": "create:block/palettes/ornate_iron_window"
+  },
+  "create:oxidized_copper_shingle_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:oxidized_copper_shingle_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:oxidized_copper_shingles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:oxidized_copper_tile_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:oxidized_copper_tile_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:oxidized_copper_tiles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:package_frogport": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:packager": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 75,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:peculiar_bell": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 17,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:pink_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:pink_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:pink_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:pink_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:pink_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:pink_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:pink_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:piston_extension_pole": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:placard": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 11,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_andesite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_andesite_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_andesite_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_andesite_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_asurine": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_asurine_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_asurine_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_asurine_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_calcite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_calcite_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_calcite_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_calcite_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_crimsite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_crimsite_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_crimsite_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_crimsite_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_deepslate": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_deepslate_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_deepslate_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_deepslate_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_diorite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_diorite_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_diorite_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_diorite_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_dripstone": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_dripstone_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_dripstone_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_dripstone_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_granite": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_granite_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_granite_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_granite_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_limestone": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_limestone_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_limestone_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_limestone_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_ochrum": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_ochrum_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_ochrum_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_ochrum_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_scorchia": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_scorchia_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_scorchia_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_scorchia_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_scoria": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_scoria_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_scoria_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_scoria_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_tuff": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_tuff_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_tuff_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_tuff_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_veridium": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_veridium_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_veridium_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:polished_cut_veridium_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:portable_fluid_interface": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 23,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:portable_storage_interface": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 22,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:powered_latch": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 92,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:powered_shaft": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:powered_toggle_latch": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 92,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:pulley_magnet": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:pulse_extender": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 92,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:pulse_repeater": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 92,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:pulse_timer": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 92,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:purple_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:purple_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:purple_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:purple_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:purple_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:purple_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:purple_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:radial_chassis": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:railway_casing": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:raw_zinc_block": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:red_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:red_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:red_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:red_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:red_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:red_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:red_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:redstone_contact": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:redstone_link": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:redstone_requester": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:refined_radiance_casing": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:repackager": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 52,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:rope": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:rope_pulley": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 21,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:rose_quartz_block": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:rose_quartz_lamp": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:rose_quartz_tiles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:rotation_speed_controller": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 27,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:sail_frame": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:schematic_table": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:schematicannon": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 38,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:scorchia": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:scorchia_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:scoria": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:scoria_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:secondary_linear_chassis": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:sequenced_gearshift": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:shadow_steel_casing": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:shaft": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_andesite_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_andesite_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_andesite_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_andesite_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_asurine_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_asurine_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_asurine_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_asurine_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_bogey": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_calcite_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_calcite_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_calcite_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_calcite_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_crimsite_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_crimsite_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_crimsite_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_crimsite_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_deepslate_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_deepslate_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_deepslate_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_deepslate_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_diorite_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_diorite_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_diorite_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_diorite_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_dripstone_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_dripstone_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_dripstone_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_dripstone_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_granite_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_granite_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_granite_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_granite_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_limestone_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_limestone_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_limestone_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_limestone_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_ochrum_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_ochrum_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_ochrum_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_ochrum_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_rose_quartz_tiles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_scorchia_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_scorchia_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_scorchia_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_scorchia_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_scoria_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_scoria_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_scoria_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_scoria_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_tuff_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_tuff_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_tuff_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_tuff_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_veridium_brick_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_veridium_brick_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_veridium_brick_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:small_veridium_bricks": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:smart_chute": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 61,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:smart_fluid_pipe": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 61,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:speedometer": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 20,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:spout": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 45,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:spruce_window": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 33,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:spruce_window_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 33,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:steam_engine": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 49,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:steam_whistle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 57,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:steam_whistle_extension": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 57,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:sticker": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 52,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:sticky_mechanical_piston": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:stock_link": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 38,
+    "blendPct": 5,
+    "tex": "create:block/link_details"
+  },
+  "create:stock_ticker": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 18,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:stockpile_switch": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:stressometer": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 20,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:tiled_glass": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 54,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:tiled_glass_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 88,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:track": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 70,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:track_observer": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:track_signal": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:track_station": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 5,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:train_door": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:train_trapdoor": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:tuff_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:turntable": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:veridium": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:veridium_pillar": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:vertical_framed_glass": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 54,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:vertical_framed_glass_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 88,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:warped_window": {
+    "renderLayer": "alpha",
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:warped_window_pane": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 25,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:water_wheel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:water_wheel_structure": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_copper_shingle_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_copper_shingle_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_copper_shingles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_copper_tile_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_copper_tile_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_copper_tiles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_exposed_copper_shingle_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_exposed_copper_shingle_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_exposed_copper_shingles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_exposed_copper_tile_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_exposed_copper_tile_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_exposed_copper_tiles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_oxidized_copper_shingle_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_oxidized_copper_shingle_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_oxidized_copper_shingles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_oxidized_copper_tile_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_oxidized_copper_tile_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_oxidized_copper_tiles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_weathered_copper_shingle_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_weathered_copper_shingle_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_weathered_copper_shingles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_weathered_copper_tile_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_weathered_copper_tile_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:waxed_weathered_copper_tiles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:weathered_copper_shingle_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:weathered_copper_shingle_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:weathered_copper_shingles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:weathered_copper_tile_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:weathered_copper_tile_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:weathered_copper_tiles": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:weathered_iron_block": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:weathered_iron_window": {
+    "renderLayer": "blend",
+    "transparent": true,
+    "alphaPct": 0,
+    "blendPct": 55,
+    "tex": "create:block/palettes/weathered_iron_window_4_end"
+  },
+  "create:weathered_iron_window_pane": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 88,
+    "blendPct": 28,
+    "tex": "create:block/palettes/weathered_iron_window"
+  },
+  "create:weighted_ejector": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 21,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:white_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:white_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:white_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:white_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:white_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:white_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 18,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:white_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:windmill_bearing": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:wooden_bracket": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 17,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:yellow_nixie_tube": {
+    "renderLayer": "optionalAlpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 37,
+    "blendPct": 36,
+    "tex": "create:block/nixie_tube"
+  },
+  "create:yellow_postbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 31,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:yellow_sail": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 13,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:yellow_seat": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 50,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:yellow_table_cloth": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:yellow_toolbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:yellow_valve_handle": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 47,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:zinc_block": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create:zinc_ore": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:andesite_encased_cross_connector": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:black_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:blue_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:brake": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:brass_chute": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 48,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:brass_encased_cross_connector": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:brass_gearbox": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:brown_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:centrifugal_clutch": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:copycat_beam": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:copycat_block": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:copycat_board": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:copycat_fence": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:copycat_fence_gate": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:copycat_slab": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:copycat_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:copycat_vertical_step": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:copycat_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:crank_wheel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:creative_fluid_vessel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 92,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:cross_connector": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:cyan_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dashboard": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 41,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_amber_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_aqua_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_beige_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_coral_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_forest_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_ginger_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_indigo_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_maroon_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_mint_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_navy_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_olive_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_rose_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_slate_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_tan_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_teal_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:dye_depot_verdant_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:empty_fan_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:encased_chain_cogwheel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 19,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_blasting_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_chocolate_coating_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_ending_catalyst_dragon_head": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_ending_catalyst_dragons_breath": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_enriched_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_exploding_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_freezing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_glooming_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_haunting_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_honey_coating_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_purifying_catalyst": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_resonance_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_sanding_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_sculking_catalyst": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_seething_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_smoking_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_soul_stripping_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_splashing_catalyst": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_transmutation_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fan_withering_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 86,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:fluid_vessel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "transparent": true,
+    "alphaTest": true,
+    "alphaPct": 92,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:freewheel_clutch": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:gray_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:green_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:inventory_access_port": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:inventory_bridge": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:inverted_clutch": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:inverted_gearshift": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:item_silo": {
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:kinetic_battery": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:kinetic_bridge": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:kinetic_bridge_destination": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:large_crank_wheel": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:light_blue_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:light_gray_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:lime_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_acacia_button": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_analog_lever": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_bamboo_button": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_birch_button": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_cherry_button": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_crimson_button": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_dark_oak_button": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_jungle_button": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_lever": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 92,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_mangrove_button": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_oak_button": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_polished_blackstone_button": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_spruce_button": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_stone_button": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_throttle_lever": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:linked_warped_button": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 85,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:magenta_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:orange_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:overstress_clutch": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:parallel_gearbox": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:pink_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:purple_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:red_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:sequenced_pulse_generator": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 93,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:shear_pin": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 94,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:six_way_gearbox": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:white_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:wrapped_copycat_fence": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:wrapped_copycat_fence_gate": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:wrapped_copycat_stairs": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:wrapped_copycat_wall": {
+    "fullCube": false,
+    "alphaPct": 0,
+    "blendPct": 0,
+    "tex": ""
+  },
+  "create_connected:yellow_fan_dyeing_catalyst": {
+    "renderLayer": "alpha",
+    "fullCube": false,
+    "alphaTest": true,
+    "alphaPct": 56,
+    "blendPct": 0,
+    "tex": ""
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "create_connected:block/fan_catalyst/with_fire",
+  "textures": {
+    "base": "createnuclear:block/enriched_soul_soil",
+    "fire": "createnuclear:block/enriching/campfire/enriching_flame"
+  }
+}

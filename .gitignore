@@ -31,7 +31,8 @@ src-tauri/data/editor/base-id.txt
 
 # Exclude local/generated workspace items
 .vs/
-src-tauri/data/editor/
+# 编辑器镜像（src-tauri/data/editor）已改为纳入版本控制：CI 打包时需要它，
+# 否则产出的安装包没有编辑器。构建期生成的 base-id.txt 仍在上面单独忽略。
 src-tauri/tests/
 src/modules/3DBLOCKS/
 src/modules/threeD_data.ts

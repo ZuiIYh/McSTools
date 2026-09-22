@@ -1,0 +1,22 @@
+@font-face {
+  font-family: notoSansSC;
+  src: url(/_next/static/media/c2b840274db78aea-s.p.woff2) format("woff2");
+  font-display: swap;
+  font-weight: 400 800;
+}
+@font-face {
+  font-family: notoSansSC Fallback;
+  src: local("Arial");
+  ascent-override: 117.61%;
+  descent-override: 29.2%;
+  line-gap-override: 0%;
+  size-adjust: 98.63%;
+}
+.__className_ba86f5 {
+  font-family:
+    notoSansSC,
+    notoSansSC Fallback;
+}
+.__variable_ba86f5 {
+  --font-noto-sans-sc: "notoSansSC", "notoSansSC Fallback";
+}
