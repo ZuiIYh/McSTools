@@ -496,8 +496,19 @@ function remapFlywheelStatic(bs, models) {
         // （horizontal_pulley 是 y 0..11 躺着的、x=0），否则会渲染成「竖轴木柱」。
         // 朝向取同 facing 的 vertical 基准（sideways_pulley 的放平朝向）。
         const vref = orient.get(normKey({ ...props, slope: 'vertical' }));
+        const yRot = ((Math.round((vref && vref.y) ?? 0) % 360) + 360) % 360;
         e.x = 90;
-        e.y = (vref && vref.y) ?? 0;
+        e.y = yRot;
+        // 带面的坐标/面名预变换与该 y 强相关（见 toPulleySpace / pulleyFaceMap）→
+        // 每个朝向必须各建一份独立模型，否则 4 个朝向共用 belt_pulley 时带面只能对一个朝向正确。
+        // yRot=270 沿用原模型键（不改名，避免已有 .mod-atlas.json 里的模型登记失配）；其余朝向另起键。
+        const baseRef = `${ns}:${base}_pulley`;
+        const srcModel = models.get(baseRef);
+        if (srcModel && yRot !== 270) {
+          const tagged = `${baseRef}__y${yRot}`;
+          if (!models.has(tagged)) models.set(tagged, srcModel);
+          e.model = tagged;
+        }
       } else {
         const ref = orient.get(normKey(props));
         if (ref) {
@@ -522,15 +533,41 @@ function remapFlywheelStatic(bs, models) {
 /**
  * ★ 传送带带轮（belt_pulley）的「带面」合成：Create 的静态 pulley 模型**只有滚筒、没有带面**——
  *   带子绕过滚筒那段同样由 Flywheel 动态绘制，所以带子一到滚筒处就"断了"，只剩一个光滚筒。
- *   这里把带面（belt/middle、belt/middle_bottom）**预旋转到 pulley 的坐标系**后并入同一模型。
- *   pulley 变体的旋转固定为 x=90 y=270（见 remapFlywheelStatic）。渲染器按「先 Rx(-x) 后 Ry(-y)」
- *   组合、以方块中心 (8,8,8) 为原点，得 M(x,y,z) = (-y, z, -x)，故预变换取其逆
- *   M⁻¹(x,y,z) = (-z, -x, y)。渲染时带子正好回到水平，并贴在滚筒两侧。
+ *   这里把带面（belt/middle、belt/middle_bottom）**预旋转到 pulley 的坐标系**后并入模型。
+ *
+ * ★★ 关键：pulley 变体的旋转是 x=90、**y=Y 随 facing 变化**
+ *   （east 0 / south 90 / west 180 / north 270，取自同 facing 的 casting=true vertical 基准，见 remapFlywheelStatic）。
+ *   渲染器按 T·Ry(-Y)·Rx(-90)·T⁻¹ 施加旋转（以方块中心 (8,8,8) 为原点），
+ *   故带面要预变换取其逆 M⁻¹ = Rx(90)·Ry(Y)：
+ *       M⁻¹(x,y,z) = (x·cosY + z·sinY, x·sinY − z·cosY, y)
+ *   老实现写死了 Y=270 的逆 (-z,-x,y) —— 只有 facing=north 对得上，
+ *   其余朝向的带面会整体多转 90°/180°/270°，正是「带轮到某些朝向就错位」的原因。
+ *   因此这里按实际 Y 取逆，并且每个 Y 都要**各建一份模型**（见 remapFlywheelStatic 的 __yY 后缀），
+ *   否则 4 个朝向共用一个模型时，只能对其中一个朝向正确。
  */
-const PULLEY_FACE = { up: 'south', down: 'north', east: 'down', west: 'up', north: 'east', south: 'west' };
-const toPulleySpace = (p) => {
+/** 带面并入 pulley 时用的坐标预变换（Y 为 pulley 变体的 y 旋转，单位度；实测 east 0 / south 90 / west 180 / north 270） */
+const toPulleySpace = (p, Y) => {
   const d = [p[0] - 8, p[1] - 8, p[2] - 8];
-  return [8 - d[2], 8 - d[0], 8 + d[1]];
+  const q = ((Math.round(Y) % 360) + 360) % 360;
+  let x, y;
+  if (q === 0) { x = d[0]; y = -d[2]; }
+  else if (q === 90) { x = d[2]; y = d[0]; }
+  else if (q === 180) { x = -d[0]; y = d[2]; }
+  else { x = -d[2]; y = -d[0]; }
+  return [8 + x, 8 + y, 8 + d[1]];
+};
+/**
+ * 带面并入 pulley 时的「面名映射」——必须与 toPulleySpace 用同一旋转：
+ * 面法线先经 Ry(Y) 再经 Rx(90)（方向 (a,b,c) → (a,−c,b)）。up/down 恒落到 south/north。
+ */
+const pulleyFaceMap = (Y) => {
+  const q = ((Math.round(Y) % 360) + 360) % 360;
+  const map = { up: 'south', down: 'north' };
+  if (q === 90) { map.east = 'up'; map.west = 'down'; map.south = 'east'; map.north = 'west'; }
+  else if (q === 180) { map.east = 'west'; map.west = 'east'; map.south = 'up'; map.north = 'down'; }
+  else if (q === 270) { map.east = 'down'; map.west = 'up'; map.south = 'west'; map.north = 'east'; }
+  else { map.east = 'east'; map.west = 'west'; map.south = 'down'; map.north = 'up'; }
+  return map;
 };
 
 export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex = new Map(), airBlocks = new Set()) {
@@ -695,8 +732,11 @@ export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex
 
       // ★ 带轮（belt_pulley）：并入「预旋转到 pulley 坐标系」的带面（上带面 + 下回程带），
       //   让带子在滚筒处连续，而不是只剩一个光滚筒（见 toPulleySpace 注释）。
-      const pm = /^([^\s:]+:block)\/belt_pulley$/.exec(ref);
+      // ref 形如 create:block/belt_pulley 或（按朝向分模型的）create:block/belt_pulley__y90
+      const pm = /^([^\s:]+:block)\/belt_pulley(?:__y(\d+))?$/.exec(ref);
       if (pm) {
+        const bandY = pm[2] !== undefined ? Number(pm[2]) : 270;
+        const faceMap = pulleyFaceMap(bandY);
         let nextSlot2 = 90;
         // 注意：readModel 读的是**源**模型，belt/middle 在这里仍是只有上带面的 2 个元素，
         // 下回程带必须另取 belt/middle_bottom（上面 {part}_bottom 的合并只作用于带段自身的落地模型）
@@ -716,12 +756,12 @@ export function buildGeometry(modid, blockIds, assets, editorModels, fallbackTex
           }
           if (els === f.elements) els = [...f.elements];
           for (const el of fb.elements) {
-            const a = toPulleySpace(el.from);
-            const b = toPulleySpace(el.to);
+            const a = toPulleySpace(el.from, bandY);
+            const b = toPulleySpace(el.to, bandY);
             const faces = {};
             for (const [dir, fv] of Object.entries(el.faces || {})) {
               if (!fv) continue;
-              const nd = PULLEY_FACE[dir];
+              const nd = faceMap[dir];
               if (!nd) continue;
               const raw = String(fv.texture || '');
               const slot = raw.startsWith('#') ? raw.slice(1) : raw;
