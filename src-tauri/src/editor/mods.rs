@@ -28,19 +28,22 @@ fn scripts_dir(app: &AppHandle) -> Result<PathBuf, String> {
 
     let mut candidates: Vec<PathBuf> = Vec::new();
 
+    // ★ 每个来源都先 simplify_path 抹掉 Windows 的 `\\?\` 前缀：
+    //   否则把 verbatim 路径交给 node 时，脚本里的 isMain 判定会失败 → 静默不执行、stdout 为空
+    //   → 上层报「装载器脚本未返回 RESULT_JSON」（本次实测的真凶，见 simplify_path 注释）。
     if let Ok(directory) = app.path().resolve("scripts", BaseDirectory::Resource) {
-        candidates.push(directory);
+        candidates.push(super::simplify_path(directory));
     }
     if let Ok(directory) = app.path().resolve("_up_", BaseDirectory::Resource) {
-        candidates.push(directory.join("scripts"));
+        candidates.push(super::simplify_path(directory).join("scripts"));
     }
     if let Ok(resource_dir) = app.path().resource_dir() {
-        push_layouts(&mut candidates, &resource_dir);
+        push_layouts(&mut candidates, &super::simplify_path(resource_dir));
     }
     // 少数打包布局会把资源放到可执行文件旁边
     if let Ok(exe) = std::env::current_exe() {
         if let Some(dir) = exe.parent() {
-            push_layouts(&mut candidates, dir);
+            push_layouts(&mut candidates, &super::simplify_path(dir.to_path_buf()));
         }
     }
     candidates.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../scripts"));
@@ -77,9 +80,10 @@ fn node_binary(app: &AppHandle) -> PathBuf {
 
     let mut candidates: Vec<PathBuf> = Vec::new();
     if let Ok(directory) = app.path().resource_dir() {
+        let directory = super::simplify_path(directory);
         for name in ["node.exe", "node"] {
             candidates.push(directory.join("binaries").join(name));
-            candidates.push(directory.join("_up_/binaries").join(name));
+            candidates.push(directory.join("_up_").join("binaries").join(name));
         }
     }
     for key in ["ProgramFiles", "ProgramFiles(x86)"] {

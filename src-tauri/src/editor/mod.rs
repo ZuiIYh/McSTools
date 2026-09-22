@@ -179,12 +179,12 @@ pub fn base_data_root(app: &AppHandle) -> Result<PathBuf, String> {
     let mut candidates: Vec<PathBuf> = Vec::new();
 
     if let Ok(directory) = app.path().resolve("data", BaseDirectory::Resource) {
-        candidates.push(directory);
+        candidates.push(simplify_path(directory));
     }
     if let Ok(directory) = app.path().resource_dir() {
+        // 先抹掉 `\\?\` 前缀：verbatim 路径下 `/` 不被识别、且会让脚本的 isMain 判定失败
+        let directory = simplify_path(directory);
         candidates.push(directory.join("data"));
-        // ⚠️ 拆成两段 join：`join("_up_/data")` 不会把 `/` 当分隔符，
-        // Windows verbatim(`\\?\`) 路径下 `/` 不被识别 → is_file() 假失败。
         candidates.push(directory.join("_up_").join("data"));
     }
     candidates.push(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("data"));
@@ -216,6 +216,25 @@ pub fn user_data_root(app: &AppHandle) -> Result<PathBuf, String> {
         .app_data_dir()
         .map(|dir| dir.join("data"))
         .map_err(|e| format!("无法获取用户数据目录：{e}"))
+}
+
+/// 去掉 Windows 的 verbatim(`\\?\`) 前缀，返回普通路径（非 Windows 平台原样返回）。
+///
+/// `PathResolver::resource_dir()` 与 `current_exe()` 都可能给出 verbatim 路径（`\\?\D:\...`）。
+/// verbatim 路径下 Windows **不再把 `/` 当分隔符**；更坑的是把它交给子进程后，
+/// Node 里 `path.resolve(process.argv[1])` 与 `fileURLToPath(import.meta.url)` 不再相等，
+/// 脚本的 `isMain` 判定失败 → 脚本被当作「被 import」而**什么都不执行，exit 0、stdout 为空**，
+/// 上层只会看到「装载器脚本未返回 RESULT_JSON」。
+/// 实测：verbatim 形式下跑 `mod-list.mjs` 正是「status=0 + stdout 空」。
+pub(crate) fn simplify_path(path: PathBuf) -> PathBuf {
+    let raw = path.to_string_lossy().into_owned();
+    if let Some(rest) = raw.strip_prefix(r"\\?\UNC\") {
+        return PathBuf::from(format!(r"\\{rest}"));
+    }
+    if let Some(rest) = raw.strip_prefix(r"\\?\") {
+        return PathBuf::from(rest);
+    }
+    path
 }
 
 /// 递归复制（覆盖同名文件；**不删除**目标里多出来的文件 —— 用户模组缓存因此得以保留）。
@@ -438,8 +457,9 @@ fn projection_url(app: &AppHandle, state: &EditorState, id: i64) -> Result<Strin
 
 #[cfg(test)]
 mod tests {
-    use super::{copy_tree, has_user_mods, read_base_id, write_schematic_file};
+    use super::{copy_tree, has_user_mods, read_base_id, simplify_path, write_schematic_file};
     use std::fs;
+    use std::path::PathBuf;
 
     
     #[test]
@@ -509,6 +529,21 @@ mod tests {
         assert_eq!(read_base_id(&user), "v2", "指纹要跟进基线，下轮不再重复刷新");
 
         let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn strips_windows_verbatim_prefix() {
+        // verbatim 路径交给 node 会让脚本的 isMain 判定失败（静默不执行）→ 必须抹掉前缀
+        assert_eq!(
+            simplify_path(PathBuf::from(r"\\?\D:\MCSTools\_up_\scripts")),
+            PathBuf::from(r"D:\MCSTools\_up_\scripts")
+        );
+        assert_eq!(
+            simplify_path(PathBuf::from(r"\\?\UNC\server\share\x")),
+            PathBuf::from(r"\\server\share\x")
+        );
+        let normal = PathBuf::from(r"D:\MCSTools\_up_\scripts");
+        assert_eq!(simplify_path(normal.clone()), normal, "普通路径不应被改动");
     }
 
     #[test]
